@@ -1,0 +1,45 @@
+name: activity-action
+description: An action that pulls repository activities.
+author: Ao Li <aoli@andrew.cmu.edu>
+inputs:
+  template:
+    description: 'Input markdown template.'
+  output:
+    description: 'Output markdown path'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set reusable variables
+      shell: bash
+      run: |
+        echo "action_repo=activity-action" >> $GITHUB_ENV
+        echo "action_org=aoli-al" >> $GITHUB_ENV
+        echo "binary_name=activity-action" >> $GITHUB_ENV
+
+    - name: Get Action Version
+      id: get_action_version
+      shell: pwsh
+      run: |
+        $finalComponent = Split-Path -Leaf ${{ github.action_path }}
+        if ($finalComponent -eq "${{ env.action_repo }}") {
+          $version = ""
+        } else {
+          $version = $finalComponent
+        }
+        Write-Output "version=$version" >> $Env:GITHUB_OUTPUT
+
+    - name: Download Action
+      shell: bash
+      run: |
+        gh release download ${{ steps.get_action_version.outputs.version }} --repo ${{ env.action_org }}/${{ env.action_repo }} --pattern '${{ runner.os }}.tgz'
+        tar -xzf ${{ runner.os }}.tgz
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Run Action
+      shell: bash
+      id: run
+      run: ./${{ runner.os }}/${{ env.binary_name }} "${{ inputs.template }}" "${{ inputs.output }}" "${{ github.repository }}"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
