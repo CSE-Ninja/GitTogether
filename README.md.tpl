@@ -45,7 +45,9 @@ jobs:
           file_pattern: 'README.md'
 ```
 
-Here you may want to modify the **template** and **output**. **template** is the template README file with placeholder `{-ActivityLocation-}` where the contributor table will be shown. You can find an example [here](https://github.com/aoli-al/activity-action-example/blob/main/README.md.tpl). **output** is the path to the generated readme file.
+Here you may want to modify the **template** and **output**. **template** is the template README file with placeholder <code>{-Activity<foo></foo>Location-}</code> where the contributor table will be shown. You can find an example [here](https://github.com/aoli-al/activity-action-example/blob/main/README.md.tpl). **output** is the path to the generated readme file.
+
+Also this will run action everytime you **push** to Github. You can change it to different [triggers](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#on).
 
 2. You need to create a Github token as a secret called `PERSONAL_GITHUB_TOKEN`. You can create a new token by going to your profile settings: `Developer settings` > `Personal access tokens` > `Tokens (classic)` > `Generate new token`. You need give all permissions in `repo`.
 
