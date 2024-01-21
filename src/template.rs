@@ -20,13 +20,13 @@ macro_rules! gen_cell {
                 <table>
                     <tr>
                         <th id="activity-table">
-                            <span>{}</span>
+                            $${{\color{{black}}+\text{{{}}}}}$$
                         </th>
                         <th id="activity-table">
-                            <span style="color:green">+{}</span>
+                            $${{\color{{green}}+\text{{{}}}}}$$
                         </th>
                         <th id="activity-table">
-                            <span style="color:red">-{}</span>
+                            $${{\color{{red}}-\text{{{}}}}}$$
                         </th>
                     </tr>
                 </table>
@@ -34,21 +34,21 @@ macro_rules! gen_cell {
         </tr>
     </table>
 </th>
-        "#, $($arg)*)
+"#, $($arg)*)
     };
 }
 
 pub fn construct_table(state: Vec<ContributorStat>) -> String {
     let mut builder = String::new();
-    builder.push_str(
-        r#"
-<style>
-#activity-table {
-    width: 50px;
-    text-align: center;
-}
-</style>"#,
-    );
+//     builder.push_str(
+//         r#"
+// <style>
+// #activity-table {
+//     width: 50px;
+//     text-align: center;
+// }
+// </style>"#,
+//     );
     builder.push_str("<table>");
     let mut col_index = 0;
     let mut contributors = Vec::<(String, String, u32, u32, u32)>::new();
@@ -93,6 +93,10 @@ pub fn construct_table(state: Vec<ContributorStat>) -> String {
             col_index = 0;
         }
     }
+    if col_index != 0 {
+        builder.push_str("</tr>");
+    }
+    builder.push_str("</table>");
 
     builder
 }
