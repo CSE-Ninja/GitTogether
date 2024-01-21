@@ -1,0 +1,30 @@
+name: Update README
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  activity-action:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@master
+
+      - uses: aoli-al/activity-action@v0.2.3
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
+        with:
+          template: "README.md.tpl"
+          output: "README.md"
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Update generated README
+          branch: main
+          commit_user_name: activity-action 🤖
+          commit_user_email: actions@github.com
+          commit_author: activity-action 🤖 <actions@github.com>
+          file_pattern: 'README.md'
