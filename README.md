@@ -25,10 +25,10 @@ and visualize it in your RAEDME file.
                 <table border="0" cellspacing="0" cellpadding="0">
                     <tr>
                         <th width="50px" style="padding:1px">
-                            $${\small{\color{black}\text{11}}}$$
+                            $${\small{\color{black}\text{12}}}$$
                         </th>
                         <th width="80px" style="padding:1px">
-                            $${\small{\color{green}+\text{1967}}}$$
+                            $${\small{\color{green}+\text{1969}}}$$
                         </th>
                         <th width="80px" style="padding:1px">
                             $${\small{\color{red}-\text{90}}}$$
