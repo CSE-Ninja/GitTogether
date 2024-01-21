@@ -25,13 +25,13 @@ and visualize it in your RAEDME file.
                 <table border="0" cellspacing="0" cellpadding="0">
                     <tr>
                         <th width="50px" style="padding:1px">
-                            $${\small{\color{black}\text{12}}}$$
+                            $${\small{\color{black}\text{13}}}$$
                         </th>
                         <th width="80px" style="padding:1px">
-                            $${\small{\color{green}+\text{1969}}}$$
+                            $${\small{\color{green}+\text{1972}}}$$
                         </th>
                         <th width="80px" style="padding:1px">
-                            $${\small{\color{red}-\text{90}}}$$
+                            $${\small{\color{red}-\text{92}}}$$
                         </th>
                     </tr>
                 </table>
