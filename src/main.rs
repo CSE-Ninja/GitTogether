@@ -31,7 +31,7 @@ async fn main() {
                 let contents =
                     fs::read_to_string(input).expect("Failed to read file.");
                 let new_contents =
-                    contents.replace("{-ActivityLocation-}", &construct_table(contributors));
+                    contents.replace("{-ActivityLocation-}", &construct_table(repository.to_string(),contributors));
                 fs::write(output, new_contents).expect("Failed to write file.");
                 println!("Contributor list generated successfully.");
                 std::process::exit(0);

@@ -1,32 +1,34 @@
 use crate::get_contributor_stats::ContributorStat;
 
 macro_rules! gen_cell {
-    ($($arg:tt)*) => {
+    ($($arg:ident),*) => {
         format!(r#"
 <th>
     <table>
         <tr>
             <td style="text-align: center">
-                <img src="{}" alt="1" width=100px height=100px>
+            <a href="https://github.com/{login}">
+                <img src="{avatar}" alt="1" width=100px height=100px>
+            </a>
             </td>
         </tr>
         <tr>
             <td style="text-align: center">
-               {}
+               <a href="https://github.com/{repo}/commits?author={login}">{login}</a>
             </td>
         </tr>
         <tr>
             <td style="text-align: center">
-                <table>
+                <table border="0" cellspacing="0" cellpadding="0">
                     <tr>
-                        <th id="activity-table">
-                            $${{\color{{black}}+\text{{{}}}}}$$
+                        <th width="50px" style="padding:1px">
+                            $${{\small{{\color{{black}}\text{{{commit}}}}}}}$$
                         </th>
-                        <th id="activity-table">
-                            $${{\color{{green}}+\text{{{}}}}}$$
+                        <th width="80px" style="padding:1px">
+                            $${{\small{{\color{{green}}+\text{{{add}}}}}}}$$
                         </th>
-                        <th id="activity-table">
-                            $${{\color{{red}}-\text{{{}}}}}$$
+                        <th width="80px" style="padding:1px">
+                            $${{\small{{\color{{red}}-\text{{{del}}}}}}}$$
                         </th>
                     </tr>
                 </table>
@@ -34,11 +36,11 @@ macro_rules! gen_cell {
         </tr>
     </table>
 </th>
-"#, $($arg)*)
+"#, $($arg=$arg),*)
     };
 }
 
-pub fn construct_table(state: Vec<ContributorStat>) -> String {
+pub fn construct_table(repo: String, state: Vec<ContributorStat>) -> String {
     let mut builder = String::new();
 //     builder.push_str(
 //         r#"
@@ -85,7 +87,7 @@ pub fn construct_table(state: Vec<ContributorStat>) -> String {
             builder.push_str("<tr>");
         }
         col_index += 1;
-        let cell = gen_cell!(avatar, login, commit, add, del);
+        let cell = gen_cell!(repo, avatar, login, commit, add, del);
 
         builder.push_str(cell.as_str());
         if col_index == 3 {
