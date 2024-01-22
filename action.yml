@@ -26,7 +26,7 @@ runs:
     - name: Download Action
       shell: bash
       run: |
-        gh release download ${{ input.version }} --repo ${{ env.action_org }}/${{ env.action_repo }} --pattern '${{ runner.os }}.tgz'
+        gh release download ${{ inputs.version }} --repo ${{ env.action_org }}/${{ env.action_repo }} --pattern '${{ runner.os }}.tgz'
         tar -xzf ${{ runner.os }}.tgz
       env:
         GH_TOKEN: ${{ github.token }}
