@@ -25,13 +25,13 @@ and visualize it in your RAEDME file.
                 <table border="0" cellspacing="0" cellpadding="0">
                     <tr>
                         <th width="50px" style="padding:1px">
-                            $${\small{\color{black}\text{10}}}$$
+                            $${\small{\color{black}\text{13}}}$$
                         </th>
                         <th width="80px" style="padding:1px">
-                            $${\small{\color{green}+\text{1964}}}$$
+                            $${\small{\color{green}+\text{1972}}}$$
                         </th>
                         <th width="80px" style="padding:1px">
-                            $${\small{\color{red}-\text{89}}}$$
+                            $${\small{\color{red}-\text{92}}}$$
                         </th>
                     </tr>
                 </table>
@@ -79,41 +79,9 @@ jobs:
           file_pattern: 'README.md'
 ```
 
-Here you may want to modify the **template** and **output**. **template** is the template README file with placeholder `<table><tr>
-<th>
-    <table>
-        <tr>
-            <td style="text-align: center">
-            <a href="https://github.com/aoli-al">
-                <img src="https://avatars.githubusercontent.com/u/5557706?v=4" alt="1" width=100px height=100px>
-            </a>
-            </td>
-        </tr>
-        <tr>
-            <td style="text-align: center">
-               <a href="https://github.com/aoli-al/activity-action/commits?author=aoli-al">aoli-al</a>
-            </td>
-        </tr>
-        <tr>
-            <td style="text-align: center">
-                <table border="0" cellspacing="0" cellpadding="0">
-                    <tr>
-                        <th width="50px" style="padding:1px">
-                            $${\small{\color{black}\text{10}}}$$
-                        </th>
-                        <th width="80px" style="padding:1px">
-                            $${\small{\color{green}+\text{1964}}}$$
-                        </th>
-                        <th width="80px" style="padding:1px">
-                            $${\small{\color{red}-\text{89}}}$$
-                        </th>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
-</th>
-</tr></table>` where the contributor table will be shown. You can find an example [here](https://github.com/aoli-al/activity-action-example/blob/main/README.md.tpl). **output** is the path to the generated readme file.
+Here you may want to modify the **template** and **output**. **template** is the template README file with placeholder <code>{-Activity<foo></foo>Location-}</code> where the contributor table will be shown. You can find an example [here](https://github.com/aoli-al/activity-action-example/blob/main/README.md.tpl). **output** is the path to the generated readme file.
+
+Also this will run action everytime you **push** to Github. You can change it to different [triggers](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#on).
 
 2. You need to create a Github token as a secret called `PERSONAL_GITHUB_TOKEN`. You can create a new token by going to your profile settings: `Developer settings` > `Personal access tokens` > `Tokens (classic)` > `Generate new token`. You need give all permissions in `repo`.
 

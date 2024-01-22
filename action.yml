@@ -1,6 +1,9 @@
 name: activity-action
 description: An action that pulls repository activities.
 author: Ao Li <aoli@andrew.cmu.edu>
+branding:
+  icon: activity
+  color: orange
 inputs:
   template:
     description: 'Input markdown template.'
