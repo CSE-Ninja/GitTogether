@@ -25,13 +25,13 @@ and visualize it in your RAEDME file.
                 <table border="0" cellspacing="0" cellpadding="0">
                     <tr>
                         <th width="50px" style="padding:1px">
-                            $${\small{\color{black}\text{13}}}$$
+                            $${\small{\color{black}\text{18}}}$$
                         </th>
                         <th width="80px" style="padding:1px">
-                            $${\small{\color{green}+\text{1972}}}$$
+                            $${\small{\color{green}+\text{1981}}}$$
                         </th>
                         <th width="80px" style="padding:1px">
-                            $${\small{\color{red}-\text{92}}}$$
+                            $${\small{\color{red}-\text{110}}}$$
                         </th>
                     </tr>
                 </table>
@@ -62,7 +62,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
 
-      - uses: aoli-al/activity-action@v0.2.3
+      - uses: aoli-al/activity-action@main
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
         with:
