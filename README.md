@@ -6,6 +6,8 @@ and visualize it in your RAEDME file.
 # Contributors
 
 
+
+
 # Instructions
 
 1. Create a new Github workflow in your repository: `.github/workflows/activity-action.yml`.
