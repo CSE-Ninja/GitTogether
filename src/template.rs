@@ -1,93 +1,107 @@
-use crate::get_contributor_stats::ContributorStat;
+use crate::api::{
+    contributor_stats_query::ContributorStatsQueryRepositoryDefaultBranchRefTargetOnCommit,
+    ContributorStats,
+};
 
 macro_rules! gen_cell {
-    ($($arg:ident),*) => {
+    ($($arg:ident=$exp:expr),*) => {
         format!(r#"
 <th>
     <table>
         <tr>
-            <td style="text-align: center">
-            <a href="https://github.com/{login}">
-                <img src="{avatar}" alt="1" width=100px height=100px>
-            </a>
-            </td>
-        </tr>
-        <tr>
-            <td style="text-align: center">
-               <a href="https://github.com/{repo}/commits?author={login}">{login}</a>
-            </td>
-        </tr>
-        <tr>
-            <td style="text-align: center">
-                <table border="0" cellspacing="0" cellpadding="0">
+            <th>
+                <table>
                     <tr>
-                        <th width="50px" style="padding:1px">
-                            $${{\small{{\color{{black}}\text{{{commit}}}}}}}$$
+                        <th>
+                            <a href="https://github.com/{login}">
+                                <img src="{avatar}" alt="1" width=100px height=100px>
+                            </a>
                         </th>
-                        <th width="80px" style="padding:1px">
-                            $${{\small{{\color{{green}}+\text{{{add}}}}}}}$$
+                    <tr>
+                    <tr>
+                        <th>
+                            <a href="https://github.com/{repo}/commits?author={login}">{login}</a>
                         </th>
-                        <th width="80px" style="padding:1px">
-                            $${{\small{{\color{{red}}-\text{{{del}}}}}}}$$
-                        </th>
-                    </tr>
+                    <tr>
                 </table>
-            </td>
-        </tr>
+            </th>
+            <th>
+                <table>
+                    <tr>
+                        <th align="left">
+                            Commit: {commit}
+                        </th>
+                    <tr>
+                    <tr>
+                        <th align="left">
+                            Addition: {add}
+                        </th>
+                    <tr>
+                    <tr>
+                        <th align="left">
+                            Deletion: {del}
+                        </th>
+                    <tr>
+                    <tr>
+                        <th align="left">
+                            Issues: {issue}
+                        </th>
+                    <tr>
+                    <tr>
+                        <th align="left">
+                            PRs: {pr}
+                        </th>
+                    <tr>
+                    <tr>
+                        <th align="left">
+                            Comments: {comment}
+                        </th>
+                    <tr>
+                </table>
+            </th>
+        <tr>
     </table>
 </th>
-"#, $($arg=$arg),*)
+"#, $($arg=$exp),*)
     };
 }
 
-pub fn construct_table(repo: String, state: Vec<ContributorStat>) -> String {
+pub fn construct_table(repo: &String, stats: &ContributorStats) -> String {
     let mut builder = String::new();
-//     builder.push_str(
-//         r#"
-// <style>
-// #activity-table {
-//     width: 50px;
-//     text-align: center;
-// }
-// </style>"#,
-//     );
+    builder.push_str("<details>
+    <summary>Click to expand!</summary>\n");
     builder.push_str("<table>");
     let mut col_index = 0;
-    let mut contributors = Vec::<(String, String, u32, u32, u32)>::new();
 
-    for contributor in state {
-        if contributor.author.login == "actions-user" {
-            continue;
-        }
-        let mut commit = 0;
-        let mut add = 0;
-        let mut del = 0;
-        for week in contributor.weeks {
-            commit += week.c;
-            add += week.a;
-            del += week.d;
-        }
-        contributors.push((
-            contributor.author.avatar_url.to_string(),
-            contributor.author.login,
-            commit,
-            add,
-            del,
-        ));
-    }
-
-    contributors.sort_by(|a, b| {
-        b.2.cmp(&a.2)
-            .then_with(|| b.3.cmp(&a.3))
-            .then_with(|| b.4.cmp(&a.4))
+    let mut results = stats
+        .stats
+        .values()
+        .filter(|it| it.author != "actions-user")
+        .collect::<Vec<_>>();
+    results.sort_by(|a, b| {
+        b.commit
+            .commit
+            .cmp(&a.commit.commit)
+            .then_with(|| b.commit.addition.cmp(&a.commit.addition))
+            .then_with(|| b.commit.deletion.cmp(&a.commit.deletion))
     });
 
-    for (avatar, login, commit, add, del) in contributors {
+    for contributor in results {
         if col_index == 0 {
             builder.push_str("<tr>");
         }
         col_index += 1;
-        let cell = gen_cell!(repo, avatar, login, commit, add, del);
+        let cell = gen_cell!(
+            repo = repo,
+            avatar = contributor.get_avatar_url(),
+            login = contributor.author,
+            commit = contributor.commit.commit,
+            add = contributor.commit.addition,
+            del = contributor.commit.deletion,
+            issue = contributor.issue.issue,
+            pr = contributor.issue.pr,
+            comment = contributor.issue.comment
+        );
 
         builder.push_str(cell.as_str());
         if col_index == 3 {
@@ -99,6 +113,7 @@ pub fn construct_table(repo: String, state: Vec<ContributorStat>) -> String {
         builder.push_str("</tr>");
     }
     builder.push_str("</table>");
+    builder.push_str("</details>");
 
     builder
 }

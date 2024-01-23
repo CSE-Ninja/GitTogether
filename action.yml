@@ -5,6 +5,9 @@ branding:
   icon: activity
   color: orange
 inputs:
+  timeframe:
+    description: "Timeframe for each period in rfc3339 standard."
+    default: "Project 2/2023-01-27T00:00:00-05:00/2023-03-03T00:00:00-05:00;Project 3/2023-03-03T00:00:00-05:00/2023-03-23T00:00:00-05:00;Project 4/2023-03-23T00:00:00-05:00/2023-04-05T00:00:00-05:00"
   template:
     description: 'Input markdown template.'
   output:
@@ -34,4 +37,5 @@ runs:
     - name: Run Action
       shell: bash
       id: run
-      run: ./${{ runner.os }}/${{ env.binary_name }} "${{ inputs.template }}" "${{ inputs.output }}" "${{ github.repository }}"
+      run: ./${{ runner.os }}/${{ env.binary_name }} "${{ inputs.template }}" "${{ inputs.output }}" "${{ github.repository }}" "${{ inputs.timeframe }}"
+h 

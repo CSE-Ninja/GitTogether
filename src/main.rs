@@ -1,44 +1,63 @@
-use activity_action::get_contributor_stats::ContributorExt;
+use activity_action::api::ContributorExt;
+use activity_action::period::parse_from_input;
+use activity_action::period::Period;
 use activity_action::template::construct_table;
+// use activity_action::template::construct_table;
 use core::time;
 use std::env;
 use std::fs;
 use std::thread;
 
-#[tokio::main]
-async fn main() {
+async fn process(
+    input: &String,
+    output: &String,
+    repository: &String,
+    periods: Vec<Period>,
+) -> i32 {
     let token = env::var("GITHUB_TOKEN").unwrap();
-
-    let args: Vec<String> = env::args().collect();
-    let input = &args[1];
-    let output = &args[2];
-    let repository = &args[3];
     let octocrab = octocrab::OctocrabBuilder::default()
         .personal_token(token)
         .build()
         .unwrap();
+    let v: Vec<&str> = repository.split("/").collect();
+    let owner = v[0].to_string();
+    let repo = v[1].to_string();
 
-    // We need retry here because https://stackoverflow.com/questions/56416465/github-api-repos-owner-repo-contributors-returns-an-empty-object
-    for _ in 0..10 {
-        let result = octocrab
-            .list_contributors_stats(repository.to_string())
-            .await;
-        match result {
+    let mut sections = String::new();
+    for period in periods {
+        match octocrab
+            .list_contributors_stats(&owner, &repo, &period.start, &period.end)
+            .await
+        {
             Err(e) => {
-                println!("Failed to fetch contributors {}", e);
+                println!("Error: {}", e);
             }
-            Ok(contributors) => {
-                let contents =
-                    fs::read_to_string(input).expect("Failed to read file.");
-                let new_contents =
-                    contents.replace("{-ActivityLocation-}", &construct_table(repository.to_string(),contributors));
-                fs::write(output, new_contents).expect("Failed to write file.");
-                println!("Contributor list generated successfully.");
-                std::process::exit(0);
+            Ok(stat) => {
+                if !stat.stats.is_empty() {
+                    sections.push_str(format!("## {}\n", period.name).as_str());
+                    sections.push_str(construct_table(&repo, &stat).as_str());
+                }
             }
         }
-        thread::sleep(time::Duration::from_secs(1));
     }
-    println!("All retries failed.");
-    std::process::exit(-1);
+
+            let contents =
+                fs::read_to_string(input).expect("Failed to read file.");
+            let new_contents =
+                contents.replace("{-ActivityLocation-}", &sections);
+            fs::write(output, new_contents).expect("Failed to write file.");
+            println!("Contributor list generated successfully.");
+
+    return 0;
+}
+
+#[tokio::main]
+async fn main() {
+    let args: Vec<String> = env::args().collect();
+    let input = &args[1];
+    let output = &args[2];
+    let repository = &args[3];
+    let periods = parse_from_input(&args[4]);
+
+    std::process::exit(process(input, output, repository, periods).await);
 }

@@ -1,0 +1,78 @@
+query ContributorStatsQuery($owner: String!, $repo: String!, $start: GitTimestamp!, $end: GitTimestamp!, $s1: String!, $s2: String!) {
+  issues: search(query: $s1, type: ISSUE, first: 100) {
+    edges {
+      node {
+        __typename
+        ... on Issue {
+          url
+          author {
+            __typename
+            login
+          }
+          comments(first: 100) {
+            edges {
+              node {
+                __typename
+                  author {
+                    __typename
+                    login
+                  }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  prs: search(query: $s2, type: ISSUE, first: 100) {
+    edges {
+      node {
+        __typename
+        ... on PullRequest {
+          url
+          author {
+            __typename
+            login
+          }
+          comments(first: 100) {
+            edges {
+              node {
+                __typename
+                author {
+                __typename
+                login
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  repository(owner: $owner, name: $repo) {
+    defaultBranchRef {
+       __typename
+      target {
+        __typename
+        ... on Commit {
+          history(since: $start, until: $end) {
+            edges {
+              node {
+                author {
+                  name
+                  email
+                  user {
+                    login
+                  }
+                }
+                additions
+                deletions
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
