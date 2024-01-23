@@ -66,6 +66,8 @@ macro_rules! gen_cell {
     };
 }
 
+const IGNORED_ACCOUNTS: &'static [&str] = &["actions-user", "github-classroom[bot]"];
+
 pub fn construct_table(repo: &String, stats: &ContributorStats) -> String {
     let mut builder = String::new();
     builder.push_str("<details>
@@ -76,7 +78,7 @@ pub fn construct_table(repo: &String, stats: &ContributorStats) -> String {
     let mut results = stats
         .stats
         .values()
-        .filter(|it| it.author != "actions-user")
+        .filter(|it| !IGNORED_ACCOUNTS.contains(&it.author.as_str()))
         .collect::<Vec<_>>();
     results.sort_by(|a, b| {
         b.commit
@@ -113,7 +115,7 @@ pub fn construct_table(repo: &String, stats: &ContributorStats) -> String {
         builder.push_str("</tr>");
     }
     builder.push_str("</table>");
-    builder.push_str("</details>");
+    builder.push_str("</details>\n\n");
 
     builder
 }

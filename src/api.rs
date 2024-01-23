@@ -134,7 +134,7 @@ pub fn response_to_contributor_stat(response: ContributorStatsResponse) -> Contr
         match issue_opt.unwrap().node.unwrap() {
             contributor_stats_query::ContributorStatsQueryPrsEdgesNode::PullRequest(v) => {
                 if let Some(author) = v.author {
-                    result.increase_issue(&author.login)
+                    result.increase_pr(&author.login)
                 }
                 for comment_opt in v.comments.edges.unwrap() {
                     if let Some(author) = comment_opt.unwrap().node.unwrap().author {
