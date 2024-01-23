@@ -38,4 +38,3 @@ runs:
       shell: bash
       id: run
       run: ./${{ runner.os }}/${{ env.binary_name }} "${{ inputs.template }}" "${{ inputs.output }}" "${{ github.repository }}" "${{ inputs.timeframe }}"
-h 
