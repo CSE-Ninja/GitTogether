@@ -7,7 +7,7 @@ branding:
 inputs:
   timeframe:
     description: "Timeframe for each period in rfc3339 standard."
-    default: "Project 2/2023-01-27T00:00:00-05:00/2023-03-03T00:00:00-05:00;Project 3/2023-03-03T00:00:00-05:00/2023-03-23T00:00:00-05:00;Project 4/2023-03-23T00:00:00-05:00/2023-04-05T00:00:00-05:00"
+    default: "Project 2/2024-01-20T00:00:00-05:00/2023-03-29T23:59:00-05:00"
   template:
     description: 'Input markdown template.'
   output:
