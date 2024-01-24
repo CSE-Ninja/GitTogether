@@ -1,7 +1,7 @@
-use crate::api::{
+use crate::{api::{
     contributor_stats_query::ContributorStatsQueryRepositoryDefaultBranchRefTargetOnCommit,
     ContributorStats,
-};
+}, period::Period};
 
 macro_rules! gen_cell {
     ($($arg:ident=$exp:expr),*) => {
@@ -13,14 +13,14 @@ macro_rules! gen_cell {
                 <table>
                     <tr>
                         <th>
-                            <a href="https://github.com/{login}">
                                 <img src="{avatar}" alt="1" width=100px height=100px>
-                            </a>
                         </th>
                     <tr>
                     <tr>
                         <th>
-                            <a href="https://github.com/{repo}/commits?author={login}">{login}</a>
+                            <a href="https://github.com/{login}">
+                            {login}
+                            </a>
                         </th>
                     <tr>
                 </table>
@@ -29,7 +29,9 @@ macro_rules! gen_cell {
                 <table>
                     <tr>
                         <th align="left">
+                            <a href="https://github.com/{repo}/commits?author={login}&since={start}&until={end}">
                             Commit: {commit}
+                            </a>
                         </th>
                     <tr>
                     <tr>
@@ -44,12 +46,16 @@ macro_rules! gen_cell {
                     <tr>
                     <tr>
                         <th align="left">
+                            <a href="https://github.com/{repo}/issues?q=author%3A{login}+type%3Aissue+created%3A{start}..{end}">
                             Issues: {issue}
+                            </a>
                         </th>
                     <tr>
                     <tr>
                         <th align="left">
+                            <a href="https://github.com/{repo}/pulls?q=author%3A{login}+type%3Apr+created%3A{start}..{end}">
                             PRs: {pr}
+                            </a>
                         </th>
                     <tr>
                     <tr>
@@ -68,7 +74,7 @@ macro_rules! gen_cell {
 
 const IGNORED_ACCOUNTS: &'static [&str] = &["actions-user", "github-classroom[bot]"];
 
-pub fn construct_table(repo: &String, stats: &ContributorStats) -> String {
+pub fn construct_table(repo: &String, stats: &ContributorStats, period: &Period) -> String {
     let mut builder = String::new();
     builder.push_str("<details>
     <summary>Click to expand!</summary>\n");
@@ -102,7 +108,9 @@ pub fn construct_table(repo: &String, stats: &ContributorStats) -> String {
             del = contributor.commit.deletion,
             issue = contributor.issue.issue,
             pr = contributor.issue.pr,
-            comment = contributor.issue.comment
+            comment = contributor.issue.comment,
+            start = period.start,
+            end = period.end
         );
 
         builder.push_str(cell.as_str());

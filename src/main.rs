@@ -35,7 +35,7 @@ async fn process(
             Ok(stat) => {
                 if !stat.stats.is_empty() {
                     sections.push_str(format!("## {} ({}-{})\n", period.name, &period.start[..10], &period.end[..10]).as_str());
-                    sections.push_str(construct_table(&repository, &stat).as_str());
+                    sections.push_str(construct_table(&repository, &stat, &period).as_str());
                 }
             }
         }
