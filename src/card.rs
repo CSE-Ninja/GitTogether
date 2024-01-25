@@ -9,7 +9,10 @@ use svg::{
     Document,
 };
 
-use crate::api::{Contributor, ContributorStats};
+use crate::{
+    api::{Contributor, ContributorStats},
+    period::Period,
+};
 
 // (TODO) This should be optimized in the future.
 
@@ -91,6 +94,8 @@ pub fn create_title(value: &String, avatar: &String) -> Group {
         .add(img)
 }
 
+const USER_PER_ROW: u32 = 3;
+
 pub fn create_detail(contributor: &Contributor) -> Group {
     let mut detail = Group::new()
         .set("transform", "translate(140, 0)")
@@ -133,17 +138,18 @@ pub fn contributor_info(contributor: &Contributor, offset: u32) -> Group {
     let detail = create_detail(contributor);
     let span = Group::new().add(title).add(detail);
 
-    let x_offset = offset / 3;
-    let y_offset = offset % 3;
+    let x_offset = offset / USER_PER_ROW;
+    let y_offset = offset % USER_PER_ROW;
     println!("{}, {}", x_offset, y_offset);
 
-    Group::new()
-        .add(span)
-        .set("transform", format!("translate({}, {})", 300 * y_offset, 170 * x_offset))
+    Group::new().add(span).set(
+        "transform",
+        format!("translate({}, {})", 300 * y_offset, 170 * x_offset),
+    )
 }
 
-pub fn draw_card(stat: &Vec<Contributor>) -> Document {
-    let mut doc = Document::new();
+pub fn draw_card(stat: &Vec<Contributor>) -> (Group, u32) {
+    let mut doc = Group::new();
     let mut offset = 0;
 
     for contributor in stat {
@@ -151,9 +157,40 @@ pub fn draw_card(stat: &Vec<Contributor>) -> Document {
         offset += 1
     }
 
+    (doc, (offset + USER_PER_ROW - 1) / USER_PER_ROW)
+}
 
-    offset += 1;
-    doc.set("height", 170 * offset).set("width", 900)
+pub fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>) -> Document {
+    let mut doc = Document::new();
+    let mut height = 0;
+
+    for ele in data {
+        if ele.1.is_empty() {
+            continue;
+        }
+
+        let title = format!(
+            "{} ({}-{})\n",
+            ele.0.name,
+            &ele.0.start[..10],
+            &ele.0.end[..10]
+        );
+        let title = Group::new()
+        .set("transform", "translate(25, 10)").add(element::Text::new().add(node::Text::new(title)));
+        let (mut card, offset) = draw_card(&ele.1);
+        card = card.set("transform", "translate(0, 25)");
+
+        doc = doc.add(
+            Group::new()
+                .set("transform", format!("translate(0, {})", height))
+                .add(title)
+                .add(card),
+        );
+        height += offset * 170 + 30;
+    }
+    println!("{}", height);
+
+    doc.set("height", height).set("width", 900)
 }
 
 #[cfg(test)]

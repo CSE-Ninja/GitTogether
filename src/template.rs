@@ -111,7 +111,7 @@ pub fn construct_table(repo: &String, stats: &Vec<Contributor>, period: &Period)
     builder.push_str("</table>");
 
 
-    svg::save("image.svg", &draw_card(stats)).unwrap();
+    // svg::save("image.svg", &draw_card(stats)).unwrap();
     // builder.push_str("</details>\n\n");
 
     builder
