@@ -1,7 +1,8 @@
+use svg::{node::{element::ForeignObject, Text}, Document};
+
 use crate::{api::{
-    contributor_stats_query::ContributorStatsQueryRepositoryDefaultBranchRefTargetOnCommit,
-    ContributorStats,
-}, period::Period};
+    contributor_stats_query::ContributorStatsQueryRepositoryDefaultBranchRefTargetOnCommit, Contributor, ContributorStats
+}, card::draw_card, period::Period};
 
 macro_rules! gen_cell {
     ($($arg:ident=$exp:expr),*) => {
@@ -15,14 +16,14 @@ macro_rules! gen_cell {
                         <th>
                                 <img src="{avatar}" alt="1" width=100px height=100px>
                         </th>
-                    <tr>
+                    </tr>
                     <tr>
                         <th>
                             <a href="https://github.com/{login}">
                             {login}
                             </a>
                         </th>
-                    <tr>
+                    </tr>
                 </table>
             </th>
             <th>
@@ -33,12 +34,12 @@ macro_rules! gen_cell {
                             Commit: {commit}
                             </a>
                         </th>
-                    <tr>
+                    </tr>
                     <tr>
                         <th align="left">
                             Addition: {add}
                         </th>
-                    <tr>
+                    </tr>
                     <tr>
                         <th align="left">
                             Deletion: {del}
@@ -72,29 +73,14 @@ macro_rules! gen_cell {
     };
 }
 
-const IGNORED_ACCOUNTS: &'static [&str] = &["actions-user", "github-classroom[bot]"];
-
-pub fn construct_table(repo: &String, stats: &ContributorStats, period: &Period) -> String {
+pub fn construct_table(repo: &String, stats: &Vec<Contributor>, period: &Period) -> String {
     let mut builder = String::new();
-    builder.push_str("<details>
-    <summary>Click to expand!</summary>\n");
+    // builder.push_str("<details>
+    // <summary>Click to expand!</summary>\n");
     builder.push_str("<table>");
     let mut col_index = 0;
 
-    let mut results = stats
-        .stats
-        .values()
-        .filter(|it| !IGNORED_ACCOUNTS.contains(&it.author.as_str()))
-        .collect::<Vec<_>>();
-    results.sort_by(|a, b| {
-        b.commit
-            .commit
-            .cmp(&a.commit.commit)
-            .then_with(|| b.commit.addition.cmp(&a.commit.addition))
-            .then_with(|| b.commit.deletion.cmp(&a.commit.deletion))
-    });
-
-    for contributor in results {
+    for contributor in stats {
         if col_index == 0 {
             builder.push_str("<tr>");
         }
@@ -123,7 +109,10 @@ pub fn construct_table(repo: &String, stats: &ContributorStats, period: &Period)
         builder.push_str("</tr>");
     }
     builder.push_str("</table>");
-    builder.push_str("</details>\n\n");
+
+
+    svg::save("image.svg", &draw_card(stats)).unwrap();
+    // builder.push_str("</details>\n\n");
 
     builder
 }

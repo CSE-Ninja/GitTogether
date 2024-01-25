@@ -106,10 +106,12 @@ pub trait ContributorExt {
         repo: &String,
         start: &String,
         end: &String,
-    ) -> Result<ContributorStats>;
+    ) -> Result<Vec<Contributor>>;
 }
 
-pub fn response_to_contributor_stat(response: ContributorStatsResponse) -> ContributorStats {
+const IGNORED_ACCOUNTS: &'static [&str] = &["actions-user", "github-classroom[bot]"];
+
+pub fn response_to_contributor_stat(response: ContributorStatsResponse) -> Vec<Contributor>{
     let mut result = ContributorStats {
         stats: HashMap::new(),
     };
@@ -170,7 +172,25 @@ pub fn response_to_contributor_stat(response: ContributorStatsResponse) -> Contr
             _ => {}
         }
     }
-    result
+
+    for ele in IGNORED_ACCOUNTS {
+        result.stats.remove(*ele);
+    }
+
+
+    let mut stats = result
+        .stats
+        .values()
+        .cloned()
+        .collect::<Vec<_>>();
+    stats.sort_by(|a, b| {
+        b.commit
+            .commit
+            .cmp(&a.commit.commit)
+            .then_with(|| b.commit.addition.cmp(&a.commit.addition))
+            .then_with(|| b.commit.deletion.cmp(&a.commit.deletion))
+    });
+    stats
 }
 
 #[async_trait::async_trait]
@@ -181,7 +201,7 @@ impl ContributorExt for Octocrab {
         repo: &String,
         start: &String,
         end: &String,
-    ) -> Result<ContributorStats> {
+    ) -> Result<Vec<Contributor>> {
         let s1 = format!("repo:{owner}/{repo} type:issue created:{start}..{end}");
         let s2 = format!("repo:{owner}/{repo} type:pr created:{start}..{end}");
         let variables = Variables {
