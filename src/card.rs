@@ -179,7 +179,17 @@ pub async fn draw_card(stat: &Vec<Contributor>) -> (Group, u32) {
 }
 
 pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>) -> Document {
-    let mut doc = Document::new();
+    let mut doc = Document::new()
+        .add(
+            Rectangle::new()
+                .set("x", 0.5)
+                .set("y", 0.5)
+                .set("rx", 4.5)
+                .set("height", "99%")
+                .set("width", "96%")
+                .set("fill", "#CCE4CC")
+                .set("stroke", "#003D00"),
+        );
     let mut height = 30;
 
     for ele in data {
@@ -214,16 +224,6 @@ pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>) -> Document {
         .set("width", 900)
         .set("xmlns:xlink", "http://www.w3.org/1999/xlink")
         .add(Style::new(CSS))
-        .add(
-            Rectangle::new()
-                .set("x", 0.5)
-                .set("y", 0.5)
-                .set("rx", 4.5)
-                .set("height", "99%")
-                .set("width", "99%")
-                .set("fill", "#ffffff00")
-                .set("stroke", "#003D00"),
-        )
 }
 
 #[cfg(test)]
