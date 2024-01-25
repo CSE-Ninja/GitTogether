@@ -17,9 +17,6 @@ jobs:
             os: ubuntu-latest
           - target: x86_64-apple-darwin
             os: macos-latest
-          - target: x86_64-pc-windows-msvc
-            os: windows-latest
-            file_extension: .exe
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.target }}
@@ -68,5 +65,5 @@ jobs:
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "Linux/Linux.tgz,macOS/macOS.tgz,Windows/Windows.tgz"
+          artifacts: "Linux/Linux.tgz,macOS/macOS.tgz"
           tag: v${{ github.event.inputs.version }}

@@ -3,7 +3,7 @@ use std::fmt::format;
 use svg::{
     node::{
         self,
-        element::{self, path::Data, Group, Path, TSpan, SVG},
+        element::{self, path::Data, Group, Image, Path, TSpan, SVG},
     },
     parser::Event,
     Document,
@@ -24,6 +24,20 @@ pub fn draw(source: &str) -> SVG {
         _ => {}
     }
     SVG::new().add(path)
+}
+
+pub fn draw_plus() -> SVG {
+    draw(r#"<path fill-rule="evenodd" d="M24 10h-10v-10h-4v10h-10v4h10v10h4v-10h10z"/>"#)
+        .set("width", "15")
+        .set("height", "15")
+        .set("viewBox", "0 0 25 25")
+}
+
+pub fn draw_minus() -> SVG {
+    draw(r#"<path fill-rule="evenodd" d="M0 10h24v4h-24z"/>"#)
+        .set("width", "15")
+        .set("height", "15")
+        .set("viewBox", "0 0 25 25")
 }
 
 pub fn draw_pr() -> SVG {
@@ -50,38 +64,96 @@ pub fn draw_discussion() -> SVG {
     )
 }
 
-pub fn create_text_node_with_icon(icon: SVG, value: &String) -> Group {
+pub fn create_text_node_with_icon(icon: SVG, value: &String, offset: u32) -> Group {
     let text = element::Text::new()
         .add(node::Text::new(value))
         .set("x", 25)
         .set("y", 12.5);
-    Group::new().add(icon).add(text)
+    Group::new()
+        .add(icon)
+        .set("transform", format!("translate(0, {})", offset * 25))
+        .add(text)
 }
 
-pub fn create_text_node(value: &String) -> Group {
-    Group::new().add(element::Text::new().add(node::Text::new(value)))
+pub fn create_title(value: &String, avatar: &String) -> Group {
+    let title = Group::new().add(element::Text::new().add(node::Text::new(value)));
+    let img = Group::new()
+        .add(
+            Image::new()
+                .set("href", avatar.clone())
+                .set("height", "100")
+                .set("width", "100"),
+        )
+        .set("transform", "translate(0, 20)");
+    Group::new()
+        .set("transform", "translate(25, 20)")
+        .add(title)
+        .add(img)
 }
 
-pub fn contributor_info(contributor: &Contributor) -> SVG {
-    let span =
-        Group::new()
-            .add(create_text_node(&contributor.author))
-            .add(create_text_node_with_icon(
-                draw_commit(),
-                &format!("Commit: {}", contributor.commit.commit),
-            ));
-    SVG::new().add(span)
+pub fn create_detail(contributor: &Contributor) -> Group {
+    let mut detail = Group::new()
+        .set("transform", "translate(140, 0)")
+        .add(create_text_node_with_icon(
+            draw_commit(),
+            &format!("Commit: {}", contributor.commit.commit),
+            0,
+        ))
+        .add(create_text_node_with_icon(
+            draw_plus(),
+            &format!("Addition: {}", contributor.commit.addition),
+            1,
+        ))
+        .add(create_text_node_with_icon(
+            draw_minus(),
+            &format!("Deletion: {}", contributor.commit.deletion),
+            2,
+        ))
+        .add(create_text_node_with_icon(
+            draw_issue(),
+            &format!("Issue: {}", contributor.issue.issue),
+            3,
+        ))
+        .add(create_text_node_with_icon(
+            draw_pr(),
+            &format!("Pr: {}", contributor.issue.pr),
+            4,
+        ))
+        .add(create_text_node_with_icon(
+            draw_discussion(),
+            &format!("Discussion: {}", contributor.issue.comment),
+            5,
+        ));
+
+    detail
+}
+
+pub fn contributor_info(contributor: &Contributor, offset: u32) -> Group {
+    let title = create_title(&contributor.author, &contributor.get_avatar_url());
+    let detail = create_detail(contributor);
+    let span = Group::new().add(title).add(detail);
+
+    let x_offset = offset / 3;
+    let y_offset = offset % 3;
+    println!("{}, {}", x_offset, y_offset);
+
+    Group::new()
+        .add(span)
+        .set("transform", format!("translate({}, {})", 300 * y_offset, 170 * x_offset))
 }
 
 pub fn draw_card(stat: &Vec<Contributor>) -> Document {
     let mut doc = Document::new();
-
-
+    let mut offset = 0;
 
     for contributor in stat {
-        doc = doc.add(contributor_info(contributor))
+        doc = doc.add(contributor_info(contributor, offset));
+        offset += 1
     }
-    doc
+
+
+    offset += 1;
+    doc.set("height", 170 * offset).set("width", 900)
 }
 
 #[cfg(test)]
