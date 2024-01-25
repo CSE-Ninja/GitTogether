@@ -140,7 +140,7 @@ impl<'a> CardDrawer<'a> {
                 &format!("Commit: {}", self.contributor.commit.commit),
                 0,
                 format!(
-                    "https://github.com/{}/commits?author={}%26since={}%26until={}",
+                    "https://github.com/{}/commits?author={}&amp;since={}&amp;until={}",
                     self.repo, self.contributor.author, self.start, self.end
                 )
                 .as_str(),
