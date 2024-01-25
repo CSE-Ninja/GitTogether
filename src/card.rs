@@ -192,7 +192,7 @@ pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>) -> Document {
     println!("{}", height);
 
     doc.set("height", height).set("width", 900)
-    .set("xmlns:xlink=", "http://www.w3.org/1999/xlink")
+    .set("xmlns:xlink", "http://www.w3.org/1999/xlink")
 }
 
 #[cfg(test)]
