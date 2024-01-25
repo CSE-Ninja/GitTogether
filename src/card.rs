@@ -185,8 +185,8 @@ pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>) -> Document {
                 .set("x", 0.5)
                 .set("y", 0.5)
                 .set("rx", 4.5)
-                .set("height", "99%")
-                .set("width", "96%")
+                .set("height", "100%")
+                .set("width", "100%")
                 .set("fill", "#CCE4CC")
                 .set("stroke", "#003D00"),
         );
@@ -221,7 +221,7 @@ pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>) -> Document {
     println!("{}", height);
 
     doc.set("height", height)
-        .set("width", 900)
+        .set("width", 870)
         .set("xmlns:xlink", "http://www.w3.org/1999/xlink")
         .add(Style::new(CSS))
 }
