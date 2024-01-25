@@ -6,7 +6,6 @@ and visualize it in your RAEDME file.
 # Contributors
 
 ## Project 2 (2024-01-20-2024-03-29
-![](https://github.com/aoli-al/activity-action/blob/main/example/image.svg)
 <details>
     <summary>Click to expand!</summary>
 <table><tr>
