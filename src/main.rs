@@ -3,10 +3,12 @@ use activity_action::api::ContributorExt;
 use activity_action::card::draw_svg;
 use activity_action::period::parse_from_input;
 use activity_action::period::Period;
+use activity_action::renderer;
 use activity_action::template::construct_table;
 // use activity_action::template::construct_table;
 use std::env;
 use std::fs;
+use std::path::Path;
 
 async fn process(repository: &String, periods: Vec<Period>) -> i32 {
     let token = env::var("GITHUB_TOKEN").unwrap();
@@ -48,7 +50,10 @@ async fn process(repository: &String, periods: Vec<Period>) -> i32 {
 
     fs::write("Contributors.md", sections).expect("Failed to write file.");
 
+
     svg::save("image.svg", &draw_svg(&data)).unwrap();
+    let mut render = renderer::Renderer::new(1960, 1080).unwrap();
+    render.render(Path::new("image.svg")).unwrap();
 
     println!("Contributor list generated successfully.");
 
