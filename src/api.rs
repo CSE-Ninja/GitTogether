@@ -3,7 +3,10 @@ use std::{collections::HashMap, fmt::format};
 use crate::api::contributor_stats_query::Variables;
 use graphql_client::{reqwest::post_graphql_blocking, GraphQLQuery, Response};
 use octocrab::{
-    auth, models::{self, Collaborator}, repos::RepoHandler, Octocrab, Result
+    auth,
+    models::{self, Collaborator},
+    repos::RepoHandler,
+    Octocrab, Result,
 };
 use serde::{Deserialize, Serialize};
 
@@ -98,7 +101,8 @@ impl ContributorStats {
 
     pub fn get_or_create_mut(&mut self, user: &String) -> &mut Contributor {
         if !self.stats.contains_key(user) {
-            self.stats.insert(user.clone(), Contributor::new(user.to_string()));
+            self.stats
+                .insert(user.clone(), Contributor::new(user.to_string()));
         }
         self.stats.get_mut(user).unwrap()
     }
@@ -118,7 +122,7 @@ pub trait ContributorExt {
 
 const IGNORED_ACCOUNTS: &'static [&str] = &["actions-user", "github-classroom[bot]"];
 
-pub fn response_to_contributor_stat(response: ContributorStatsResponse) -> Vec<Contributor>{
+pub fn response_to_contributor_stat(response: ContributorStatsResponse) -> Vec<Contributor> {
     let mut result = ContributorStats {
         stats: HashMap::new(),
     };
@@ -168,7 +172,7 @@ pub fn response_to_contributor_stat(response: ContributorStatsResponse) -> Vec<C
                 let histories = c.history.edges.unwrap();
                 for history in histories {
                     if let Some(commit) = history.unwrap().node {
-                        if let Some(author) = commit.author.unwrap().user  {
+                        if let Some(author) = commit.author.unwrap().user {
                             result.increase_addition(&author.login, commit.additions);
                             result.increase_deletion(&author.login, commit.deletions);
                             result.increase_commit(&author.login);
@@ -184,12 +188,7 @@ pub fn response_to_contributor_stat(response: ContributorStatsResponse) -> Vec<C
         result.stats.remove(*ele);
     }
 
-
-    let mut stats = result
-        .stats
-        .values()
-        .cloned()
-        .collect::<Vec<_>>();
+    let mut stats = result.stats.values().cloned().collect::<Vec<_>>();
     stats.sort_by(|a, b| {
         b.commit
             .commit

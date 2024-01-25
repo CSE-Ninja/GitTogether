@@ -3,7 +3,10 @@ use std::fmt::format;
 use svg::{
     node::{
         self,
-        element::{self, path::Data, Group, Image, Path, Rectangle, Style, TSpan, SVG},
+        element::{
+            self, path::Data, Anchor, Element, Group, Image, Link, Path, Rectangle, Style, TSpan,
+            SVG,
+        },
     },
     parser::Event,
     Document,
@@ -11,7 +14,7 @@ use svg::{
 
 use crate::{
     api::{Contributor, ContributorStats},
-    period::Period,
+    period::{self, Period},
 };
 
 // (TODO) This should be optimized in the future.
@@ -44,7 +47,6 @@ const CSS: &str = r#"
     display: block;
 }
 "#;
-
 
 pub fn draw_plus() -> SVG {
     draw(r#"<path fill-rule="evenodd" d="M24 10h-10v-10h-4v10h-10v4h10v10h4v-10h10z"/>"#)
@@ -84,20 +86,29 @@ pub fn draw_discussion() -> SVG {
     )
 }
 
-pub fn create_text_node_with_icon(icon: SVG, value: &String, offset: u32) -> Group {
+pub fn create_text_node_with_icon(icon: SVG, value: &String, offset: u32, link: &str) -> Group {
+    let mut group = Group::new().set("transform", format!("translate(0, {})", offset * 25));
+    group = group.add(icon);
     let text = element::Text::new()
         .add(node::Text::new(value))
         .set("class", "stat")
         .set("x", 25)
         .set("y", 12.5);
-    Group::new()
-        .add(icon)
-        .set("transform", format!("translate(0, {})", offset * 25))
-        .add(text)
+    if !link.is_empty() {
+        group.add(Anchor::new().set("xlink:href", link).add(text))
+    } else {
+        group.add(text)
+    }
 }
 
 pub fn create_title(value: &String, avatar: &String) -> Group {
-    let title = Group::new().add(element::Text::new().add(node::Text::new(value)).set("class", "stat bold"));
+    let title = Group::new().add(
+        Anchor::new().add(
+            element::Text::new()
+                .add(node::Text::new(value))
+                .set("class", "stat bold"),
+        ).set("xlink:href", format!("https://github.com/{}", value)),
+    );
     let img = Group::new()
         .add(
             Image::new()
@@ -112,84 +123,124 @@ pub fn create_title(value: &String, avatar: &String) -> Group {
         .add(img)
 }
 
+pub struct CardDrawer<'a> {
+    contributor: &'a Contributor,
+    start: &'a String,
+    end: &'a String,
+    repo: &'a String,
+}
+
+impl<'a> CardDrawer<'a> {
+    pub fn create_detail(&self) -> Group {
+        let mut detail = Group::new()
+            .set("transform", "translate(140, 0)")
+            .add(create_text_node_with_icon(
+                draw_commit(),
+                &format!("Commit: {}", self.contributor.commit.commit),
+                0,
+                format!(
+                    "https://github.com/{}/commits?author={}&since={}&until={}",
+                    self.repo, self.contributor.author, self.start, self.end
+                )
+                .as_str(),
+            ))
+            .add(create_text_node_with_icon(
+                draw_plus(),
+                &format!("Addition: {}", self.contributor.commit.addition),
+                1,
+                "",
+            ))
+            .add(create_text_node_with_icon(
+                draw_minus(),
+                &format!("Deletion: {}", self.contributor.commit.deletion),
+                2,
+                "",
+            ))
+            .add(create_text_node_with_icon(
+                draw_issue(),
+                &format!("Issue: {}", self.contributor.issue.issue),
+                3,
+                format!(
+                    "https://github.com/{}/issues?q=author%3A{}+type%3Aissue+created%3A{}..{}",
+                    self.repo, self.contributor.author, self.start, self.end
+                )
+                .as_str(),
+            ))
+            .add(create_text_node_with_icon(
+                draw_pr(),
+                &format!("Pr: {}", self.contributor.issue.pr),
+                4,
+                format!(
+                    "https://github.com/{}/pulls?q=author%3A{}+type%3Apr+created%3A{}..{}",
+                    self.repo, self.contributor.author, self.start, self.end
+                )
+                .as_str(),
+            ))
+            .add(create_text_node_with_icon(
+                draw_discussion(),
+                &format!("Discussion: {}", self.contributor.issue.comment),
+                5,
+                "",
+            ));
+
+        detail
+    }
+
+    pub async fn contributor_info(&self, offset: u32) -> Group {
+        let title = create_title(
+            &self.contributor.author,
+            &self.contributor.get_avatar_base64().await,
+        );
+        let detail = self.create_detail();
+        let span = Group::new().add(title).add(detail);
+
+        let x_offset = offset / USER_PER_ROW;
+        let y_offset = offset % USER_PER_ROW;
+        println!("{}, {}", x_offset, y_offset);
+
+        Group::new().add(span).set(
+            "transform",
+            format!("translate({}, {})", 300 * y_offset, 170 * x_offset),
+        )
+    }
+}
+
 const USER_PER_ROW: u32 = 3;
 
-pub fn create_detail(contributor: &Contributor) -> Group {
-    let mut detail = Group::new()
-        .set("transform", "translate(140, 0)")
-        .add(create_text_node_with_icon(
-            draw_commit(),
-            &format!("Commit: {}", contributor.commit.commit),
-            0,
-        ))
-        .add(create_text_node_with_icon(
-            draw_plus(),
-            &format!("Addition: {}", contributor.commit.addition),
-            1,
-        ))
-        .add(create_text_node_with_icon(
-            draw_minus(),
-            &format!("Deletion: {}", contributor.commit.deletion),
-            2,
-        ))
-        .add(create_text_node_with_icon(
-            draw_issue(),
-            &format!("Issue: {}", contributor.issue.issue),
-            3,
-        ))
-        .add(create_text_node_with_icon(
-            draw_pr(),
-            &format!("Pr: {}", contributor.issue.pr),
-            4,
-        ))
-        .add(create_text_node_with_icon(
-            draw_discussion(),
-            &format!("Discussion: {}", contributor.issue.comment),
-            5,
-        ));
-
-    detail
-}
-
-pub async fn contributor_info(contributor: &Contributor, offset: u32) -> Group {
-    let title = create_title(&contributor.author, &contributor.get_avatar_base64().await);
-    let detail = create_detail(contributor);
-    let span = Group::new().add(title).add(detail);
-
-    let x_offset = offset / USER_PER_ROW;
-    let y_offset = offset % USER_PER_ROW;
-    println!("{}, {}", x_offset, y_offset);
-
-    Group::new().add(span).set(
-        "transform",
-        format!("translate({}, {})", 300 * y_offset, 170 * x_offset),
-    )
-}
-
-pub async fn draw_card(stat: &Vec<Contributor>) -> (Group, u32) {
+pub async fn draw_card(
+    stat: &Vec<Contributor>,
+    start: &String,
+    end: &String,
+    repo: &String,
+) -> (Group, u32) {
     let mut doc = Group::new();
     let mut offset = 0;
 
     for contributor in stat {
-        doc = doc.add(contributor_info(contributor, offset).await);
+        let drawer = CardDrawer {
+            contributor,
+            start,
+            end,
+            repo,
+        };
+        doc = doc.add(drawer.contributor_info(offset).await);
         offset += 1
     }
 
     (doc, (offset + USER_PER_ROW - 1) / USER_PER_ROW)
 }
 
-pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>) -> Document {
-    let mut doc = Document::new()
-        .add(
-            Rectangle::new()
-                .set("x", 0.5)
-                .set("y", 0.5)
-                .set("rx", 4.5)
-                .set("height", "99.5%")
-                .set("width", "99.5%")
-                .set("fill", "#CCE4CC")
-                .set("stroke", "#003D00"),
-        );
+pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>, repo: &String) -> Document {
+    let mut doc = Document::new().add(
+        Rectangle::new()
+            .set("x", 0.5)
+            .set("y", 0.5)
+            .set("rx", 4.5)
+            .set("height", "99.5%")
+            .set("width", "99.5%")
+            .set("fill", "#CCE4CC")
+            .set("stroke", "#003D00"),
+    );
     let mut height = 30;
 
     for ele in data {
@@ -203,11 +254,12 @@ pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>) -> Document {
             &ele.0.start[..10],
             &ele.0.end[..10]
         );
-        let title = Group::new()
-            .set("transform", "translate(25, 10)")
-            .add(element::Text::new()
-            .add(node::Text::new(title)).set("class", "header"));
-        let (mut card, offset) = draw_card(&ele.1).await;
+        let title = Group::new().set("transform", "translate(25, 10)").add(
+            element::Text::new()
+                .add(node::Text::new(title))
+                .set("class", "header"),
+        );
+        let (mut card, offset) = draw_card(&ele.1, &ele.0.start, &ele.0.end, repo).await;
         card = card.set("transform", "translate(0, 25)");
 
         doc = doc.add(

@@ -49,8 +49,7 @@ async fn process(repository: &String, periods: Vec<Period>) -> i32 {
 
     fs::write("Contributors.md", sections).expect("Failed to write file.");
 
-
-    svg::save("image.svg", &draw_svg(&data).await).unwrap();
+    svg::save("image.svg", &draw_svg(&data, repository).await).unwrap();
 
     println!("Contributor list generated successfully.");
 
