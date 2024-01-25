@@ -185,8 +185,8 @@ pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>) -> Document {
                 .set("x", 0.5)
                 .set("y", 0.5)
                 .set("rx", 4.5)
-                .set("height", "99%")
-                .set("width", "99%")
+                .set("height", "99.5%")
+                .set("width", "99.5%")
                 .set("fill", "#CCE4CC")
                 .set("stroke", "#003D00"),
         );
