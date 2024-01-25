@@ -3,7 +3,6 @@ use activity_action::api::ContributorExt;
 use activity_action::card::draw_svg;
 use activity_action::period::parse_from_input;
 use activity_action::period::Period;
-use activity_action::renderer;
 use activity_action::template::construct_table;
 // use activity_action::template::construct_table;
 use std::env;
