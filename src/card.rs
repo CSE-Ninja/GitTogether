@@ -3,7 +3,7 @@ use std::fmt::format;
 use svg::{
     node::{
         self,
-        element::{self, path::Data, Group, Image, Path, TSpan, SVG},
+        element::{self, path::Data, Group, Image, Path, Rectangle, Style, TSpan, SVG},
     },
     parser::Event,
     Document,
@@ -26,8 +26,25 @@ pub fn draw(source: &str) -> SVG {
         }
         _ => {}
     }
-    SVG::new().add(path)
+    SVG::new().add(path).set("class", "icon")
 }
+
+const CSS: &str = r#"
+.header {
+    font: 600 18px 'Segoe UI', Ubuntu, Sans-Serif;
+    fill: #007A00;
+    animation: fadeInAnimation 0.8s ease-in-out forwards;
+}
+.stat {
+    font: 600 14px 'Segoe UI', Ubuntu, "Helvetica Neue", Sans-Serif; fill: #444;
+}
+.bold { font-weight: 700 }
+.icon {
+    fill: #003D00;
+    display: block;
+}
+"#;
+
 
 pub fn draw_plus() -> SVG {
     draw(r#"<path fill-rule="evenodd" d="M24 10h-10v-10h-4v10h-10v4h10v10h4v-10h10z"/>"#)
@@ -70,6 +87,7 @@ pub fn draw_discussion() -> SVG {
 pub fn create_text_node_with_icon(icon: SVG, value: &String, offset: u32) -> Group {
     let text = element::Text::new()
         .add(node::Text::new(value))
+        .set("class", "stat")
         .set("x", 25)
         .set("y", 12.5);
     Group::new()
@@ -78,9 +96,8 @@ pub fn create_text_node_with_icon(icon: SVG, value: &String, offset: u32) -> Gro
         .add(text)
 }
 
-
 pub fn create_title(value: &String, avatar: &String) -> Group {
-    let title = Group::new().add(element::Text::new().add(node::Text::new(value)));
+    let title = Group::new().add(element::Text::new().add(node::Text::new(value)).set("class", "stat bold"));
     let img = Group::new()
         .add(
             Image::new()
@@ -163,7 +180,7 @@ pub async fn draw_card(stat: &Vec<Contributor>) -> (Group, u32) {
 
 pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>) -> Document {
     let mut doc = Document::new();
-    let mut height = 0;
+    let mut height = 30;
 
     for ele in data {
         if ele.1.is_empty() {
@@ -177,7 +194,9 @@ pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>) -> Document {
             &ele.0.end[..10]
         );
         let title = Group::new()
-        .set("transform", "translate(25, 10)").add(element::Text::new().add(node::Text::new(title)));
+            .set("transform", "translate(25, 10)")
+            .add(element::Text::new()
+            .add(node::Text::new(title)).set("class", "header"));
         let (mut card, offset) = draw_card(&ele.1).await;
         card = card.set("transform", "translate(0, 25)");
 
@@ -191,8 +210,20 @@ pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>) -> Document {
     }
     println!("{}", height);
 
-    doc.set("height", height).set("width", 900)
-    .set("xmlns:xlink", "http://www.w3.org/1999/xlink")
+    doc.set("height", height)
+        .set("width", 900)
+        .set("xmlns:xlink", "http://www.w3.org/1999/xlink")
+        .add(Style::new(CSS))
+        .add(
+            Rectangle::new()
+                .set("x", 0.5)
+                .set("y", 0.5)
+                .set("rx", 4.5)
+                .set("height", "99%")
+                .set("width", "99%")
+                .set("fill", "#ffffff00")
+                .set("stroke", "#003D00"),
+        )
 }
 
 #[cfg(test)]
@@ -201,8 +232,6 @@ mod tests {
         node::{element::ForeignObject, Text},
         Document,
     };
-
-    use super::draw;
 
     #[test]
     fn test_tag() {
