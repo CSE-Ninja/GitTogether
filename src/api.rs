@@ -58,6 +58,13 @@ impl Contributor {
     pub fn get_avatar_url(&self) -> String {
         format!("https://github.com/{}.png", self.author)
     }
+
+    pub async fn get_avatar_base64(&self) -> String {
+        let response = reqwest::get(self.get_avatar_url()).await.unwrap();
+        let bytes = response.bytes().await.unwrap();
+        let encoded = base64::encode(&bytes);
+        format!("data:image/png;base64,{}", encoded)
+    }
 }
 
 pub struct ContributorStats {

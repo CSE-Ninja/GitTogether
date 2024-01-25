@@ -78,6 +78,7 @@ pub fn create_text_node_with_icon(icon: SVG, value: &String, offset: u32) -> Gro
         .add(text)
 }
 
+
 pub fn create_title(value: &String, avatar: &String) -> Group {
     let title = Group::new().add(element::Text::new().add(node::Text::new(value)));
     let img = Group::new()
@@ -133,8 +134,8 @@ pub fn create_detail(contributor: &Contributor) -> Group {
     detail
 }
 
-pub fn contributor_info(contributor: &Contributor, offset: u32) -> Group {
-    let title = create_title(&contributor.author, &contributor.get_avatar_url());
+pub async fn contributor_info(contributor: &Contributor, offset: u32) -> Group {
+    let title = create_title(&contributor.author, &contributor.get_avatar_base64().await);
     let detail = create_detail(contributor);
     let span = Group::new().add(title).add(detail);
 
@@ -148,19 +149,19 @@ pub fn contributor_info(contributor: &Contributor, offset: u32) -> Group {
     )
 }
 
-pub fn draw_card(stat: &Vec<Contributor>) -> (Group, u32) {
+pub async fn draw_card(stat: &Vec<Contributor>) -> (Group, u32) {
     let mut doc = Group::new();
     let mut offset = 0;
 
     for contributor in stat {
-        doc = doc.add(contributor_info(contributor, offset));
+        doc = doc.add(contributor_info(contributor, offset).await);
         offset += 1
     }
 
     (doc, (offset + USER_PER_ROW - 1) / USER_PER_ROW)
 }
 
-pub fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>) -> Document {
+pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>) -> Document {
     let mut doc = Document::new();
     let mut height = 0;
 
@@ -177,7 +178,7 @@ pub fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>) -> Document {
         );
         let title = Group::new()
         .set("transform", "translate(25, 10)").add(element::Text::new().add(node::Text::new(title)));
-        let (mut card, offset) = draw_card(&ele.1);
+        let (mut card, offset) = draw_card(&ele.1).await;
         card = card.set("transform", "translate(0, 25)");
 
         doc = doc.add(

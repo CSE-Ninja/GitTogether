@@ -24,3 +24,5 @@ resvg = "0.29.0"
 tiny-skia = "0.8.3"
 log = "0.4.20"
 simple_logger = "4.2.0"
+reqwest = { version = "0.11", features = ["blocking"] }
+base64 = "0.13"
