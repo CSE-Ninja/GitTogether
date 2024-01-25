@@ -49,7 +49,7 @@ Here you may want to modify the **template** and **output**. **template** is the
 
 Also this will run action everytime you **push** to Github. You can change it to different [triggers](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#on).
 
-2. You need to create a Github token as a secret called `PERSONAL_GITHUB_TOKEN`. You can create a new token by going to your profile settings: `Developer settings` > `Personal access tokens` > `Tokens (classic)` > `Generate new token`. You need give all permissions in `repo`.
+2. You need to create a Github token as a secret called `PERSONAL_GITHUB_TOKEN`. You can create a new token by going to your profile settings: `Developer settings` > `Personal access tokens` > `Tokens (classic)` > `Generate new token`. You do **NOT** need to select any scopes.
 
 3. Add the generated Github token to your repository secrets: `Settings` > `Secrets and variables` > `Actions` > `Secrets` > `New repository secret`. Name: `PERSONAL_GITHUB_TOKEN`; Value: `YOUR_NEW_TOKEN_VALUE`.
 

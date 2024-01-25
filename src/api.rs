@@ -193,7 +193,6 @@ impl ContributorExt for Octocrab {
             s2,
         };
         let query = ContributorStatsQuery::build_query(variables);
-        println!("{}", serde_json::json!(&query).to_string());
         let resp: ContributorStatsResponse = self.graphql(&query).await?;
         Ok(response_to_contributor_stat(resp))
     }
