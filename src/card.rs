@@ -84,7 +84,7 @@ pub fn create_title(value: &String, avatar: &String) -> Group {
     let img = Group::new()
         .add(
             Image::new()
-                .set("href", avatar.clone())
+                .set("xlink:href", avatar.clone())
                 .set("height", "100")
                 .set("width", "100"),
         )
