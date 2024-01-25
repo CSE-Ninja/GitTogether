@@ -11,6 +11,7 @@ use svg::{
     parser::Event,
     Document,
 };
+use urlencoding::encode;
 
 use crate::{
     api::{Contributor, ContributorStats},
@@ -107,7 +108,7 @@ pub fn create_title(value: &String, avatar: &String) -> Group {
             element::Text::new()
                 .add(node::Text::new(value))
                 .set("class", "stat bold"),
-        ).set("xlink:href", format!("https://github.com/{}", value)),
+        ).set("xlink:href", format!("https://github.com/{}", value).to_string()),
     );
     let img = Group::new()
         .add(
@@ -139,7 +140,7 @@ impl<'a> CardDrawer<'a> {
                 &format!("Commit: {}", self.contributor.commit.commit),
                 0,
                 format!(
-                    "https://github.com/{}/commits?author={}&since={}&until={}",
+                    "https://github.com/{}/commits?author={}%26since={}%26until={}",
                     self.repo, self.contributor.author, self.start, self.end
                 )
                 .as_str(),
