@@ -5,8 +5,6 @@ and visualize it in your RAEDME file.
 
 # Contributors
 
-## Project 2 (2024-01-20-2024-03-29
-
 ![](https://activity-action.vercel.app/api/handler?repo=aoli-al/activity-action)
 
 
