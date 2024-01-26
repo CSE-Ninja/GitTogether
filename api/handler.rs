@@ -17,10 +17,16 @@ pub async fn handler(req: Request) -> Result<Response<Body>, Error> {
         params.insert(key.into_owned(), value.into_owned());
     }
 
-    if params.contains_key("repo") && params.contains_key("period") {
+    if params.contains_key("repo") {
+
         let repo = params.get("repo").unwrap();
-        let period_str = params.get("period").unwrap();
-        let periods = period::parse_from_input(period_str);
+        let periods = if params.contains_key("period") {
+            let period_str = params.get("period").unwrap();
+            period::parse_from_input(period_str)
+        } else {
+            period::get_recent10_days()
+        };
+
         let svg = activity_action::process(repo, periods).await;
 
         Ok(Response::builder()
