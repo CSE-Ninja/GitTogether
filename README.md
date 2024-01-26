@@ -6,68 +6,8 @@ and visualize it in your RAEDME file.
 # Contributors
 
 ## Project 2 (2024-01-20-2024-03-29
-<details>
-    <summary>Click to expand!</summary>
-<table><tr>
-<th>
-    <table>
-        <tr>
-            <th>
-                <table>
-                    <tr>
-                        <th>
-                            <a href="https://github.com/aoli-al">
-                                <img src="https://github.com/aoli-al.png" alt="1" width=100px height=100px>
-                            </a>
-                        </th>
-                    <tr>
-                    <tr>
-                        <th>
-                            <a href="https://github.com/aoli-al/activity-action/commits?author=aoli-al">aoli-al</a>
-                        </th>
-                    <tr>
-                </table>
-            </th>
-            <th>
-                <table>
-                    <tr>
-                        <th align="left">
-                            Commit: 29
-                        </th>
-                    <tr>
-                    <tr>
-                        <th align="left">
-                            Addition: 64596
-                        </th>
-                    <tr>
-                    <tr>
-                        <th align="left">
-                            Deletion: 336
-                        </th>
-                    <tr>
-                    <tr>
-                        <th align="left">
-                            Issues: 0
-                        </th>
-                    <tr>
-                    <tr>
-                        <th align="left">
-                            PRs: 0
-                        </th>
-                    <tr>
-                    <tr>
-                        <th align="left">
-                            Comments: 0
-                        </th>
-                    <tr>
-                </table>
-            </th>
-        <tr>
-    </table>
-</th>
-</tr></table></details>
 
-
+![](https://activity-action.vercel.app/api/handler?repo=aoli-al/activity-action)
 
 
 # Instructions
