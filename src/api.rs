@@ -1,10 +1,8 @@
-use std::{collections::HashMap};
+use std::collections::HashMap;
 
 use crate::api::contributor_stats_query::Variables;
-use graphql_client::{GraphQLQuery};
-use octocrab::{
-    Octocrab, Result,
-};
+use graphql_client::GraphQLQuery;
+use octocrab::{Octocrab, Result};
 use serde::{Deserialize, Serialize};
 
 use self::contributor_stats_query::ContributorStatsQueryRepositoryDefaultBranchRefTarget;
@@ -18,6 +16,8 @@ use self::contributor_stats_query::ContributorStatsQueryRepositoryDefaultBranchR
 
 pub struct ContributorStatsQuery;
 type GitTimestamp = String;
+
+#[allow(clippy::upper_case_acronyms)]
 type URI = String;
 
 #[derive(Debug, Deserialize)]
@@ -124,34 +124,36 @@ pub fn response_to_contributor_stat(response: ContributorStatsResponse) -> Vec<C
     };
 
     for issue_opt in response.data.issues.edges.unwrap() {
-
-        if let contributor_stats_query::ContributorStatsQueryIssuesEdgesNode::Issue(v) = issue_opt.unwrap().node.unwrap() {
-                if let Some(author) = v.author {
-                    result.increase_issue(&author.login)
-                }
-                for comment_opt in v.comments.edges.unwrap() {
-                    if let Some(author) = comment_opt.unwrap().node.unwrap().author {
-                        result.increase_comment(&author.login)
-                    }
+        if let contributor_stats_query::ContributorStatsQueryIssuesEdgesNode::Issue(v) =
+            issue_opt.unwrap().node.unwrap()
+        {
+            if let Some(author) = v.author {
+                result.increase_issue(&author.login)
+            }
+            for comment_opt in v.comments.edges.unwrap() {
+                if let Some(author) = comment_opt.unwrap().node.unwrap().author {
+                    result.increase_comment(&author.login)
                 }
             }
+        }
     }
 
     for issue_opt in response.data.prs.edges.unwrap() {
-
-        if let contributor_stats_query::ContributorStatsQueryPrsEdgesNode::PullRequest(v)  = issue_opt.unwrap().node.unwrap() {
-                if let Some(author) = v.author {
-                    result.increase_pr(&author.login)
-                }
-                for comment_opt in v.comments.edges.unwrap() {
-                    if let Some(author) = comment_opt.unwrap().node.unwrap().author {
-                        result.increase_comment(&author.login)
-                    }
+        if let contributor_stats_query::ContributorStatsQueryPrsEdgesNode::PullRequest(v) =
+            issue_opt.unwrap().node.unwrap()
+        {
+            if let Some(author) = v.author {
+                result.increase_pr(&author.login)
+            }
+            for comment_opt in v.comments.edges.unwrap() {
+                if let Some(author) = comment_opt.unwrap().node.unwrap().author {
+                    result.increase_comment(&author.login)
                 }
             }
+        }
     }
 
-    if let Some(target) = response
+    if let Some(ContributorStatsQueryRepositoryDefaultBranchRefTarget::Commit(c)) = response
         .data
         .repository
         .unwrap()
@@ -159,20 +161,15 @@ pub fn response_to_contributor_stat(response: ContributorStatsResponse) -> Vec<C
         .unwrap()
         .target
     {
-        match target {
-            ContributorStatsQueryRepositoryDefaultBranchRefTarget::Commit(c) => {
-                let histories = c.history.edges.unwrap();
-                for history in histories {
-                    if let Some(commit) = history.unwrap().node {
-                        if let Some(author) = commit.author.unwrap().user {
-                            result.increase_addition(&author.login, commit.additions);
-                            result.increase_deletion(&author.login, commit.deletions);
-                            result.increase_commit(&author.login);
-                        }
-                    }
+        let histories = c.history.edges.unwrap();
+        for history in histories {
+            if let Some(commit) = history.unwrap().node {
+                if let Some(author) = commit.author.unwrap().user {
+                    result.increase_addition(&author.login, commit.additions);
+                    result.increase_deletion(&author.login, commit.deletions);
+                    result.increase_commit(&author.login);
                 }
             }
-            _ => {}
         }
     }
 
