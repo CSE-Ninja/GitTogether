@@ -1,8 +1,8 @@
-use svg::{node::{element::ForeignObject, Text}, Document};
+
 
 use crate::{api::{
-    contributor_stats_query::ContributorStatsQueryRepositoryDefaultBranchRefTargetOnCommit, Contributor, ContributorStats
-}, card::draw_card, period::Period};
+    Contributor
+}, period::Period};
 
 macro_rules! gen_cell {
     ($($arg:ident=$exp:expr),*) => {

@@ -1,4 +1,4 @@
-use chrono::{DateTime, Duration, FixedOffset, Utc};
+use chrono::{Duration, Utc};
 
 pub struct Period {
     pub name: String,
@@ -8,9 +8,9 @@ pub struct Period {
 
 pub fn parse_from_input(input: &String) -> Vec<Period> {
     input
-        .split(";")
+        .split(';')
         .map(|it| {
-            let v = it.split("/").take(3).collect::<Vec<&str>>();
+            let v = it.split('/').take(3).collect::<Vec<&str>>();
             println!("{}", it);
             let name = v[0].to_string();
             let start = v[1].to_string();
@@ -28,5 +28,5 @@ pub fn get_recent10_days() -> Vec<Period> {
     let now = Utc::now();
     let start = (now - Duration::days(10)).to_rfc3339();
     let end = now.to_rfc3339();
-    return vec![Period{name, start, end}]
+    vec![Period{name, start, end}]
 }

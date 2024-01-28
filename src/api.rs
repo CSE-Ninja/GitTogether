@@ -1,11 +1,8 @@
-use std::{collections::HashMap, fmt::format};
+use std::{collections::HashMap};
 
 use crate::api::contributor_stats_query::Variables;
-use graphql_client::{reqwest::post_graphql_blocking, GraphQLQuery, Response};
+use graphql_client::{GraphQLQuery};
 use octocrab::{
-    auth,
-    models::{self, Collaborator},
-    repos::RepoHandler,
     Octocrab, Result,
 };
 use serde::{Deserialize, Serialize};
@@ -120,7 +117,7 @@ pub trait ContributorExt {
     ) -> Result<Vec<Contributor>>;
 }
 
-const IGNORED_ACCOUNTS: &'static [&str] = &["actions-user", "github-classroom[bot]"];
+const IGNORED_ACCOUNTS: &[&str] = &["actions-user", "github-classroom[bot]"];
 
 pub fn response_to_contributor_stat(response: ContributorStatsResponse) -> Vec<Contributor> {
     let mut result = ContributorStats {

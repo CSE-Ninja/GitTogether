@@ -1,21 +1,21 @@
-use std::fmt::format;
+
 
 use svg::{
     node::{
         self,
         element::{
-            self, path::Data, Anchor, Element, Group, Image, Link, Path, Rectangle, Style, TSpan,
+            self, Anchor, Group, Image, Path, Rectangle, Style,
             SVG,
         },
     },
     parser::Event,
     Document,
 };
-use urlencoding::encode;
+
 
 use crate::{
-    api::{Contributor, ContributorStats},
-    period::{self, Period},
+    api::{Contributor},
+    period::{Period},
 };
 
 // (TODO) This should be optimized in the future.
@@ -25,7 +25,7 @@ pub fn draw(source: &str) -> SVG {
     let mut path = Path::new();
     let result = parser.next().unwrap();
     match result {
-        Event::Tag(Path, _, attributes) => {
+        Event::Tag(_Path, _, attributes) => {
             *path.get_attributes_mut() = attributes;
         }
         _ => {}
@@ -133,7 +133,7 @@ pub struct CardDrawer<'a> {
 
 impl<'a> CardDrawer<'a> {
     pub fn create_detail(&self) -> Group {
-        let mut detail = Group::new()
+        let detail = Group::new()
             .set("transform", "translate(140, 0)")
             .add(create_text_node_with_icon(
                 draw_commit(),

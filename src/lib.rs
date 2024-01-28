@@ -1,4 +1,4 @@
-use std::{env, fs};
+use std::{env};
 
 use period::Period;
 use svg::Document;
@@ -16,7 +16,7 @@ pub async fn process(repository: &String, periods: Vec<Period>) -> Document {
         .personal_token(token)
         .build()
         .unwrap();
-    let v: Vec<&str> = repository.split("/").collect();
+    let v: Vec<&str> = repository.split('/').collect();
     let owner = v[0].to_string();
     let repo = v[1].to_string();
 
@@ -41,7 +41,7 @@ pub async fn process(repository: &String, periods: Vec<Period>) -> Document {
                         )
                         .as_str(),
                     );
-                    sections.push_str(construct_table(&repository, &stat, &period).as_str());
+                    sections.push_str(construct_table(repository, &stat, &period).as_str());
                     data.push((period, stat));
                 }
             }

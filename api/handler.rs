@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use activity_action::period;
 use reqwest::Url;
-use serde_json::json;
+
 use vercel_runtime::{run, Body, Error, Request, Response, StatusCode};
 
 #[tokio::main]
