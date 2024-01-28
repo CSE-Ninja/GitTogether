@@ -25,7 +25,7 @@ pub fn draw(source: &str) -> SVG {
     let mut path = Path::new();
     let result = parser.next().unwrap();
     match result {
-        Event::Tag(_Path, _, attributes) => {
+        Event::Tag(_path, _, attributes) => {
             *path.get_attributes_mut() = attributes;
         }
         _ => {}

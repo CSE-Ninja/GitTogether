@@ -1,16 +1,6 @@
-
-
-
 use activity_action::period::parse_from_input;
-
 use activity_action::process;
-
-
-// use activity_action::template::construct_table;
 use std::env;
-
-
-
 
 #[tokio::main]
 async fn main() {
