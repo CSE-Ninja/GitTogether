@@ -6,7 +6,7 @@ pub struct Period {
     pub end: String,
 }
 
-pub fn parse_from_input(input: &String) -> Vec<Period> {
+pub fn parse_from_input(input: &str) -> Vec<Period> {
     input
         .split(';')
         .map(|it| {

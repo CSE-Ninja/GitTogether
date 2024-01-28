@@ -14,8 +14,8 @@ use svg::{
 
 
 use crate::{
-    api::{Contributor},
-    period::{Period},
+    api::Contributor,
+    period::Period,
 };
 
 // (TODO) This should be optimized in the future.
@@ -24,11 +24,8 @@ pub fn draw(source: &str) -> SVG {
     let mut parser = svg::parser::Parser::new(source);
     let mut path = Path::new();
     let result = parser.next().unwrap();
-    match result {
-        Event::Tag(_path, _, attributes) => {
-            *path.get_attributes_mut() = attributes;
-        }
-        _ => {}
+    if let Event::Tag(_path, _, attributes) = result {
+        *path.get_attributes_mut() = attributes;
     }
     SVG::new().add(path).set("class", "icon")
 }
@@ -87,7 +84,7 @@ pub fn draw_discussion() -> SVG {
     )
 }
 
-pub fn create_text_node_with_icon(icon: SVG, value: &String, offset: u32, link: &str) -> Group {
+pub fn create_text_node_with_icon(icon: SVG, value: &str, offset: u32, link: &str) -> Group {
     let mut group = Group::new().set("transform", format!("translate(0, {})", offset * 25));
     group = group.add(icon);
     let text = element::Text::new()
@@ -102,7 +99,7 @@ pub fn create_text_node_with_icon(icon: SVG, value: &String, offset: u32, link: 
     }
 }
 
-pub fn create_title(value: &String, avatar: &String) -> Group {
+pub fn create_title(value: &str, avatar: &str) -> Group {
     let title = Group::new().add(
         Anchor::new().add(
             element::Text::new()
@@ -113,7 +110,7 @@ pub fn create_title(value: &String, avatar: &String) -> Group {
     let img = Group::new()
         .add(
             Image::new()
-                .set("xlink:href", avatar.clone())
+                .set("xlink:href", avatar)
                 .set("height", "100")
                 .set("width", "100"),
         )
@@ -126,9 +123,9 @@ pub fn create_title(value: &String, avatar: &String) -> Group {
 
 pub struct CardDrawer<'a> {
     contributor: &'a Contributor,
-    start: &'a String,
-    end: &'a String,
-    repo: &'a String,
+    start: &'a str,
+    end: &'a str,
+    repo: &'a str,
 }
 
 impl<'a> CardDrawer<'a> {
@@ -210,9 +207,9 @@ const USER_PER_ROW: u32 = 3;
 
 pub async fn draw_card(
     stat: &Vec<Contributor>,
-    start: &String,
-    end: &String,
-    repo: &String,
+    start: &str,
+    end: &str,
+    repo: &str,
 ) -> (Group, u32) {
     let mut doc = Group::new();
     let mut offset = 0;
@@ -231,7 +228,7 @@ pub async fn draw_card(
     (doc, (offset + USER_PER_ROW - 1) / USER_PER_ROW)
 }
 
-pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>, repo: &String) -> Document {
+pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>, repo: &str) -> Document {
     let mut doc = Document::new().add(
         Rectangle::new()
             .set("x", 0.5)

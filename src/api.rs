@@ -72,34 +72,34 @@ pub struct ContributorStats {
 }
 
 impl ContributorStats {
-    pub fn increase_addition(&mut self, user: &String, count: i64) {
+    pub fn increase_addition(&mut self, user: &str, count: i64) {
         self.get_or_create_mut(user).commit.addition += count as u32;
     }
 
-    pub fn increase_commit(&mut self, user: &String) {
+    pub fn increase_commit(&mut self, user: &str) {
         self.get_or_create_mut(user).commit.commit += 1;
     }
 
-    pub fn increase_deletion(&mut self, user: &String, count: i64) {
+    pub fn increase_deletion(&mut self, user: &str, count: i64) {
         self.get_or_create_mut(user).commit.deletion += count as u32;
     }
 
-    pub fn increase_issue(&mut self, user: &String) {
+    pub fn increase_issue(&mut self, user: &str) {
         self.get_or_create_mut(user).issue.issue += 1;
     }
 
-    pub fn increase_pr(&mut self, user: &String) {
+    pub fn increase_pr(&mut self, user: &str) {
         self.get_or_create_mut(user).issue.pr += 1;
     }
 
-    pub fn increase_comment(&mut self, user: &String) {
+    pub fn increase_comment(&mut self, user: &str) {
         self.get_or_create_mut(user).issue.comment += 1;
     }
 
-    pub fn get_or_create_mut(&mut self, user: &String) -> &mut Contributor {
+    pub fn get_or_create_mut(&mut self, user: &str) -> &mut Contributor {
         if !self.stats.contains_key(user) {
             self.stats
-                .insert(user.clone(), Contributor::new(user.to_string()));
+                .insert(user.to_owned(), Contributor::new(user.to_string()));
         }
         self.stats.get_mut(user).unwrap()
     }
@@ -107,13 +107,12 @@ impl ContributorStats {
 
 #[async_trait::async_trait]
 pub trait ContributorExt {
-    // async fn list_contributors_stats(&self, repository: String) -> Result<Vec<ContributorStat>>;
     async fn list_contributors_stats(
         &self,
-        owner: &String,
-        repo: &String,
-        start: &String,
-        end: &String,
+        owner: &str,
+        repo: &str,
+        start: &str,
+        end: &str,
     ) -> Result<Vec<Contributor>>;
 }
 
@@ -125,8 +124,8 @@ pub fn response_to_contributor_stat(response: ContributorStatsResponse) -> Vec<C
     };
 
     for issue_opt in response.data.issues.edges.unwrap() {
-        match issue_opt.unwrap().node.unwrap() {
-            contributor_stats_query::ContributorStatsQueryIssuesEdgesNode::Issue(v) => {
+
+        if let contributor_stats_query::ContributorStatsQueryIssuesEdgesNode::Issue(v) = issue_opt.unwrap().node.unwrap() {
                 if let Some(author) = v.author {
                     result.increase_issue(&author.login)
                 }
@@ -136,13 +135,11 @@ pub fn response_to_contributor_stat(response: ContributorStatsResponse) -> Vec<C
                     }
                 }
             }
-            _ => {}
-        }
     }
 
     for issue_opt in response.data.prs.edges.unwrap() {
-        match issue_opt.unwrap().node.unwrap() {
-            contributor_stats_query::ContributorStatsQueryPrsEdgesNode::PullRequest(v) => {
+
+        if let contributor_stats_query::ContributorStatsQueryPrsEdgesNode::PullRequest(v)  = issue_opt.unwrap().node.unwrap() {
                 if let Some(author) = v.author {
                     result.increase_pr(&author.login)
                 }
@@ -152,8 +149,6 @@ pub fn response_to_contributor_stat(response: ContributorStatsResponse) -> Vec<C
                     }
                 }
             }
-            _ => {}
-        }
     }
 
     if let Some(target) = response
@@ -200,10 +195,10 @@ pub fn response_to_contributor_stat(response: ContributorStatsResponse) -> Vec<C
 impl ContributorExt for Octocrab {
     async fn list_contributors_stats(
         &self,
-        owner: &String,
-        repo: &String,
-        start: &String,
-        end: &String,
+        owner: &str,
+        repo: &str,
+        start: &str,
+        end: &str,
     ) -> Result<Vec<Contributor>> {
         let s1 = format!("repo:{owner}/{repo} type:issue created:{start}..{end}");
         let s2 = format!("repo:{owner}/{repo} type:pr created:{start}..{end}");
