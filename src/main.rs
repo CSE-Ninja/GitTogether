@@ -1,4 +1,4 @@
-use activity_action::period::parse_from_input;
+use activity_action::period::{get_recent10_days, parse_from_input};
 use activity_action::process;
 use std::env;
 
@@ -6,7 +6,11 @@ use std::env;
 async fn main() {
     let args: Vec<String> = env::args().collect();
     let repository = &args[1];
-    let periods = parse_from_input(&args[2]);
+    let periods = if args.len() > 2 {
+        parse_from_input(&args[2])
+    } else {
+        get_recent10_days()
+    };
     let svg = process(repository, periods).await;
     svg::save("image.svg", &svg).unwrap();
 }
