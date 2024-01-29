@@ -1,0 +1,68 @@
+use svg::node::{
+    self,
+    element::{self, Anchor, Group, Image},
+};
+
+use super::Style;
+
+pub struct FullStyle {}
+
+impl Style for FullStyle {
+    fn card_width(&self) -> u32 {
+        300
+    }
+
+    fn draw_contribution_item(
+        &self,
+        icon: svg::node::element::SVG,
+        info: &str,
+        value: u32,
+        link: &str,
+    ) -> svg::node::element::Group {
+        let mut group = Group::new();
+        // .set("transform", format!("translate(0, {})", offset * 25));
+        group = group.add(icon);
+
+        let text = element::Text::new()
+            .add(node::Text::new(format!("{}: {}", info, value)))
+            .set("class", "stat")
+            .set("x", 25)
+            .set("y", 12.5);
+        if !link.is_empty() {
+            group.add(Anchor::new().set("xlink:href", link).add(text))
+        } else {
+            group.add(text)
+        }
+    }
+
+    fn draw_title(&self, title: &str, avatar: &str) -> svg::node::element::Group {
+        let title = Group::new().add(
+            Anchor::new()
+                .add(
+                    element::Text::new()
+                        .add(node::Text::new(title))
+                        .set("class", "stat bold"),
+                )
+                .set(
+                    "xlink:href",
+                    format!("https://github.com/{}", title).to_string(),
+                ),
+        );
+        let img = Group::new()
+            .add(
+                Image::new()
+                    .set("xlink:href", avatar)
+                    .set("height", "100")
+                    .set("width", "100"),
+            )
+            .set("transform", "translate(0, 20)");
+        Group::new()
+            .set("transform", "translate(25, 20)")
+            .add(title)
+            .add(img)
+    }
+
+    fn user_per_row(&self) -> u32 {
+        3
+    }
+}

@@ -1,6 +1,7 @@
 use std::{env};
 
 use period::Period;
+use styles::get_style;
 use svg::Document;
 
 use crate::{api::{Contributor, ContributorExt}, card::draw_svg, template::construct_table};
@@ -9,6 +10,7 @@ pub mod api;
 pub mod card;
 pub mod period;
 pub mod template;
+pub mod styles;
 
 pub async fn process(repository: &String, periods: Vec<Period>) -> Document {
     let token = env::var("GITHUB_TOKEN").unwrap();
@@ -47,7 +49,5 @@ pub async fn process(repository: &String, periods: Vec<Period>) -> Document {
             }
         }
     }
-    // fs::write("Contributors.md", sections).expect("Failed to write file.");
-
-    draw_svg(&data, repository).await
+    draw_svg(&data, repository, get_style("compact")).await
 }

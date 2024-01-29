@@ -1,21 +1,16 @@
-
-
 use svg::{
     node::{
         self,
-        element::{
-            self, Anchor, Group, Image, Path, Rectangle, Style,
-            SVG,
-        },
+        element::{self, Anchor, Group, Image, Path, Rectangle, Style, SVG},
     },
     parser::Event,
     Document,
 };
 
-
 use crate::{
     api::Contributor,
     period::Period,
+    styles::{self},
 };
 
 // (TODO) This should be optimized in the future.
@@ -84,132 +79,116 @@ pub fn draw_discussion() -> SVG {
     )
 }
 
-pub fn create_text_node_with_icon(icon: SVG, value: &str, offset: u32, link: &str) -> Group {
-    let mut group = Group::new().set("transform", format!("translate(0, {})", offset * 25));
-    group = group.add(icon);
-    let text = element::Text::new()
-        .add(node::Text::new(value))
-        .set("class", "stat")
-        .set("x", 25)
-        .set("y", 12.5);
-    if !link.is_empty() {
-        group.add(Anchor::new().set("xlink:href", link).add(text))
-    } else {
-        group.add(text)
-    }
-}
-
-pub fn create_title(value: &str, avatar: &str) -> Group {
-    let title = Group::new().add(
-        Anchor::new().add(
-            element::Text::new()
-                .add(node::Text::new(value))
-                .set("class", "stat bold"),
-        ).set("xlink:href", format!("https://github.com/{}", value).to_string()),
-    );
-    let img = Group::new()
-        .add(
-            Image::new()
-                .set("xlink:href", avatar)
-                .set("height", "100")
-                .set("width", "100"),
-        )
-        .set("transform", "translate(0, 20)");
-    Group::new()
-        .set("transform", "translate(25, 20)")
-        .add(title)
-        .add(img)
-}
-
-pub struct CardDrawer<'a> {
+pub struct CardDrawer<'a, S: styles::Style + ?Sized> {
     contributor: &'a Contributor,
     start: &'a str,
     end: &'a str,
     repo: &'a str,
+    style: &'a Box<S>,
 }
 
-impl<'a> CardDrawer<'a> {
+impl<'a, S: styles::Style + ?Sized> CardDrawer<'a, S> {
     pub fn create_detail(&self) -> Group {
         let detail = Group::new()
             .set("transform", "translate(140, 0)")
-            .add(create_text_node_with_icon(
-                draw_commit(),
-                &format!("Commit: {}", self.contributor.commit.commit),
-                0,
-                format!(
-                    "https://github.com/{}/commits?author={}&amp;since={}&amp;until={}",
-                    self.repo, self.contributor.author, self.start, self.end
-                )
-                .as_str(),
-            ))
-            .add(create_text_node_with_icon(
-                draw_plus(),
-                &format!("Addition: {}", self.contributor.commit.addition),
-                1,
-                "",
-            ))
-            .add(create_text_node_with_icon(
-                draw_minus(),
-                &format!("Deletion: {}", self.contributor.commit.deletion),
-                2,
-                "",
-            ))
-            .add(create_text_node_with_icon(
-                draw_issue(),
-                &format!("Issue: {}", self.contributor.issue.issue),
-                3,
-                format!(
+            .add(
+                self.style
+                    .draw_contribution_item(
+                        draw_commit(),
+                        "Commit",
+                        self.contributor.commit.commit,
+                        format!(
+                            "https://github.com/{}/commits?author={}&amp;since={}&amp;until={}",
+                            self.repo, self.contributor.author, self.start, self.end
+                        )
+                        .as_str(),
+                    )
+                    .set("transform", format!("translate(0, {})", 0 * 25)),
+            )
+            .add(
+                self.style
+                    .draw_contribution_item(
+                        draw_plus(),
+                        "Addition",
+                        self.contributor.commit.addition,
+                        "",
+                    )
+                    .set("transform", format!("translate(0, {})", 1 * 25)),
+            )
+            .add(
+                self.style
+                    .draw_contribution_item(
+                        draw_minus(),
+                        "Deletion",
+                        self.contributor.commit.deletion,
+                        "",
+                    )
+                    .set("transform", format!("translate(0, {})", 2 * 25)),
+            )
+            .add(
+                self.style
+                    .draw_contribution_item(
+                        draw_issue(),
+                        "Issue",
+                        self.contributor.issue.issue,
+                        format!(
                     "https://github.com/{}/issues?q=author%3A{}+type%3Aissue+created%3A{}..{}",
                     self.repo, self.contributor.author, self.start, self.end
                 )
-                .as_str(),
-            ))
-            .add(create_text_node_with_icon(
-                draw_pr(),
-                &format!("Pr: {}", self.contributor.issue.pr),
-                4,
-                format!(
-                    "https://github.com/{}/pulls?q=author%3A{}+type%3Apr+created%3A{}..{}",
-                    self.repo, self.contributor.author, self.start, self.end
-                )
-                .as_str(),
-            ))
-            .add(create_text_node_with_icon(
-                draw_discussion(),
-                &format!("Discussion: {}", self.contributor.issue.comment),
-                5,
-                "",
-            ));
-
+                        .as_str(),
+                    )
+                    .set("transform", format!("translate(0, {})", 3 * 25)),
+            )
+            .add(
+                self.style
+                    .draw_contribution_item(
+                        draw_pr(),
+                        "PR",
+                        self.contributor.issue.pr,
+                        format!(
+                            "https://github.com/{}/pulls?q=author%3A{}+type%3Apr+created%3A{}..{}",
+                            self.repo, self.contributor.author, self.start, self.end
+                        )
+                        .as_str(),
+                    )
+                    .set("transform", format!("translate(0, {})", 4 * 25)),
+            )
+            .add(
+                self.style
+                    .draw_contribution_item(
+                        draw_discussion(),
+                        "Discussion",
+                        self.contributor.issue.comment,
+                        "",
+                    )
+                    .set("transform", format!("translate(0, {})", 5 * 25)),
+            );
         detail
     }
 
-    pub async fn contributor_info(&self, offset: u32) -> Group {
-        let title = create_title(
+    pub async fn contributor_info(&self) -> Group {
+        let title = self.style.draw_title(
             &self.contributor.author,
             &self.contributor.get_avatar_base64().await,
         );
         let detail = self.create_detail();
         let span = Group::new().add(title).add(detail);
+        // println!("{}, {}", x_offset, y_offset);
 
-        let x_offset = offset / USER_PER_ROW;
-        let y_offset = offset % USER_PER_ROW;
-        println!("{}, {}", x_offset, y_offset);
-
-        Group::new().add(span).set(
-            "transform",
-            format!("translate({}, {})", 300 * y_offset, 170 * x_offset),
-        )
+        Group::new().add(span)
+        // .set(
+        //     "transform",
+        //     format!("translate({}, {})", 300 * y_offset, 170 * x_offset),
+        // )
     }
 }
 
-const USER_PER_ROW: u32 = 3;
-
-pub async fn draw_card(
+pub async fn draw_period(
     stat: &Vec<Contributor>,
     start: &str,
     end: &str,
     repo: &str,
+    style: &Box<dyn styles::Style>,
 ) -> (Group, u32) {
     let mut doc = Group::new();
     let mut offset = 0;
@@ -220,15 +199,21 @@ pub async fn draw_card(
             start,
             end,
             repo,
+            style: &style,
         };
-        doc = doc.add(drawer.contributor_info(offset).await);
+        let x_offset = offset / style.user_per_row();
+        let y_offset = offset % style.user_per_row();
+        doc = doc.add(drawer.contributor_info().await
+        .set(
+            "transform",
+            format!("translate({}, {})", style.card_width() * y_offset, 170 * x_offset),
+        ));
         offset += 1
     }
-
-    (doc, (offset + USER_PER_ROW - 1) / USER_PER_ROW)
+    (doc, (offset + style.user_per_row() - 1) / style.user_per_row())
 }
 
-pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>, repo: &str) -> Document {
+pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>, repo: &str, style: Box<dyn styles::Style>) -> Document {
     let mut doc = Document::new().add(
         Rectangle::new()
             .set("x", 0.5)
@@ -257,7 +242,7 @@ pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>, repo: &str) -> Doc
                 .add(node::Text::new(title))
                 .set("class", "header"),
         );
-        let (mut card, offset) = draw_card(&ele.1, &ele.0.start, &ele.0.end, repo).await;
+        let (mut card, offset) = draw_period(&ele.1, &ele.0.start, &ele.0.end, repo, &style).await;
         card = card.set("transform", "translate(0, 25)");
 
         doc = doc.add(
