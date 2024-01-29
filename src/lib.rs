@@ -12,7 +12,7 @@ pub mod period;
 pub mod template;
 pub mod styles;
 
-pub async fn process(repository: &String, periods: Vec<Period>) -> Document {
+pub async fn process(repository: &String, periods: Vec<Period>, style: &str) -> Document {
     let token = env::var("GITHUB_TOKEN").unwrap();
     let octocrab = octocrab::OctocrabBuilder::default()
         .personal_token(token)
@@ -49,5 +49,5 @@ pub async fn process(repository: &String, periods: Vec<Period>) -> Document {
             }
         }
     }
-    draw_svg(&data, repository, get_style("compact")).await
+    draw_svg(&data, repository, get_style(style).as_ref()).await
 }

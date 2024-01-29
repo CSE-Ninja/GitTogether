@@ -27,7 +27,13 @@ pub async fn handler(req: Request) -> Result<Response<Body>, Error> {
             period::get_recent10_days()
         };
 
-        let svg = activity_action::process(repo, periods).await;
+        let style = if params.contains_key("style") {
+            params.get("style").unwrap()
+        } else {
+            "compact"
+        };
+
+        let svg = activity_action::process(repo, periods, style).await;
 
         Ok(Response::builder()
             .status(StatusCode::OK)

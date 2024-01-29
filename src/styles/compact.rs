@@ -63,6 +63,6 @@ impl Style for CompactStyle {
     }
 
     fn user_per_row(&self) -> u32 {
-        3
+        5
     }
 }

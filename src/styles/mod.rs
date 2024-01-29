@@ -1,6 +1,6 @@
 use svg::node::element::{Group, SVG};
 
-use crate::{api::Contributor, period::Period};
+
 
 use self::{compact::CompactStyle, full::FullStyle};
 

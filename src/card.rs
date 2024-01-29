@@ -1,7 +1,7 @@
 use svg::{
     node::{
         self,
-        element::{self, Anchor, Group, Image, Path, Rectangle, Style, SVG},
+        element::{self, Group, Path, Rectangle, Style, SVG},
     },
     parser::Event,
     Document,
@@ -84,7 +84,7 @@ pub struct CardDrawer<'a, S: styles::Style + ?Sized> {
     start: &'a str,
     end: &'a str,
     repo: &'a str,
-    style: &'a Box<S>,
+    style: &'a S,
 }
 
 impl<'a, S: styles::Style + ?Sized> CardDrawer<'a, S> {
@@ -113,7 +113,7 @@ impl<'a, S: styles::Style + ?Sized> CardDrawer<'a, S> {
                         self.contributor.commit.addition,
                         "",
                     )
-                    .set("transform", format!("translate(0, {})", 1 * 25)),
+                    .set("transform", format!("translate(0, {})", 25)),
             )
             .add(
                 self.style
@@ -188,7 +188,7 @@ pub async fn draw_period(
     start: &str,
     end: &str,
     repo: &str,
-    style: &Box<dyn styles::Style>,
+    style: &dyn styles::Style,
 ) -> (Group, u32) {
     let mut doc = Group::new();
     let mut offset = 0;
@@ -199,7 +199,7 @@ pub async fn draw_period(
             start,
             end,
             repo,
-            style: &style,
+            style,
         };
         let x_offset = offset / style.user_per_row();
         let y_offset = offset % style.user_per_row();
@@ -213,7 +213,7 @@ pub async fn draw_period(
     (doc, (offset + style.user_per_row() - 1) / style.user_per_row())
 }
 
-pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>, repo: &str, style: Box<dyn styles::Style>) -> Document {
+pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>, repo: &str, style: &dyn styles::Style) -> Document {
     let mut doc = Document::new().add(
         Rectangle::new()
             .set("x", 0.5)
@@ -242,7 +242,7 @@ pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>, repo: &str, style:
                 .add(node::Text::new(title))
                 .set("class", "header"),
         );
-        let (mut card, offset) = draw_period(&ele.1, &ele.0.start, &ele.0.end, repo, &style).await;
+        let (mut card, offset) = draw_period(&ele.1, &ele.0.start, &ele.0.end, repo, style).await;
         card = card.set("transform", "translate(0, 25)");
 
         doc = doc.add(
@@ -256,7 +256,7 @@ pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>, repo: &str, style:
     println!("{}", height);
 
     doc.set("height", height)
-        .set("width", 870)
+        .set("width", style.card_width() * style.user_per_row())
         .set("xmlns:xlink", "http://www.w3.org/1999/xlink")
         .add(Style::new(CSS))
 }
