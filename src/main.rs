@@ -1,6 +1,6 @@
 use activity_action::period::{get_recent10_days, parse_from_input};
 use activity_action::process;
-use std::{array, env};
+
 use clap::Parser;
 
 
