@@ -1,14 +1,16 @@
+use std::collections::{HashMap, HashSet};
+
 use svg::{
     node::{
         self,
-        element::{self, Group, Path, Rectangle, Style, SVG},
+        element::{self, Definitions, Group, Image, Path, Rectangle, Style, SVG},
     },
     parser::Event,
     Document,
 };
 
 use crate::{
-    api::Contributor,
+    api::{avatar_base64_for_user, Contributor},
     period::Period,
     styles::{self},
 };
@@ -170,7 +172,7 @@ impl<'a, S: styles::Style + ?Sized> CardDrawer<'a, S> {
     pub async fn contributor_info(&self) -> Group {
         let title = self.style.draw_title(
             &self.contributor.author,
-            &self.contributor.get_avatar_base64().await,
+            format!("#{}", &self.contributor.author).as_str(),
         );
         let detail = self.create_detail();
         Group::new().add(title).add(detail)
@@ -197,17 +199,27 @@ pub async fn draw_period(
         };
         let x_offset = offset % style.user_per_row();
         let y_offset = offset / style.user_per_row();
-        doc = doc.add(drawer.contributor_info().await
-        .set(
+        doc = doc.add(drawer.contributor_info().await.set(
             "transform",
-            format!("translate({}, {})", style.card_width() * x_offset, 170 * y_offset),
+            format!(
+                "translate({}, {})",
+                style.card_width() * x_offset,
+                170 * y_offset
+            ),
         ));
         offset += 1
     }
-    (doc, (offset + style.user_per_row() - 1) / style.user_per_row())
+    (
+        doc,
+        (offset + style.user_per_row() - 1) / style.user_per_row(),
+    )
 }
 
-pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>, repo: &str, style: &dyn styles::Style) -> Document {
+pub async fn draw_svg(
+    data: &Vec<(Period, Vec<Contributor>)>,
+    repo: &str,
+    style: &dyn styles::Style,
+) -> Document {
     let mut doc = Document::new().add(
         Rectangle::new()
             .set("x", 0.5)
@@ -218,6 +230,25 @@ pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>, repo: &str, style:
             .set("fill", "#CCE4CC")
             .set("stroke", "#003D00"),
     );
+
+    let authors: HashSet<&str> = data
+        .iter()
+        .flat_map(|it| &it.1)
+        .map(|it| it.author.as_str())
+        .collect();
+
+    let mut defs = Definitions::new();
+    for author in authors {
+        defs = defs.add(
+            Image::new()
+                .set("id", author)
+                .set("xlink:href", avatar_base64_for_user(&author).await)
+                .set("height", "100")
+                .set("width", "100"),
+        )
+    }
+    doc = doc.add(defs);
+
     let mut height = 30;
 
     for ele in data {
@@ -247,8 +278,6 @@ pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>, repo: &str, style:
         );
         height += offset * 170 + 30;
     }
-    println!("{}", height);
-
     doc.set("height", height)
         .set("width", style.card_width() * style.user_per_row() + 20)
         .set("xmlns:xlink", "http://www.w3.org/1999/xlink")

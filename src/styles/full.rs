@@ -1,6 +1,6 @@
 use svg::node::{
     self,
-    element::{self, Anchor, Group, Image},
+    element::{self, Anchor, Group, Image, Use},
 };
 
 use super::Style;
@@ -50,10 +50,8 @@ impl Style for FullStyle {
         );
         let img = Group::new()
             .add(
-                Image::new()
+                Use::new()
                     .set("xlink:href", avatar)
-                    .set("height", "100")
-                    .set("width", "100"),
             )
             .set("transform", "translate(0, 20)");
         Group::new()
