@@ -104,7 +104,7 @@ impl<'a, S: styles::Style + ?Sized> CardDrawer<'a, S> {
                         )
                         .as_str(),
                     )
-                    .set("transform", format!("translate(0, {})", 0 * y_space)),
+                    .set("transform", format!("translate(0, {})", 0)),
             )
             .add(
                 self.style
