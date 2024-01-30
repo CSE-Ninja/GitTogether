@@ -89,8 +89,9 @@ pub struct CardDrawer<'a, S: styles::Style + ?Sized> {
 
 impl<'a, S: styles::Style + ?Sized> CardDrawer<'a, S> {
     pub fn create_detail(&self) -> Group {
+        let y_space = 20;
         let detail = Group::new()
-            .set("transform", "translate(140, 0)")
+            .set("transform", "translate(140, 25)")
             .add(
                 self.style
                     .draw_contribution_item(
@@ -103,7 +104,7 @@ impl<'a, S: styles::Style + ?Sized> CardDrawer<'a, S> {
                         )
                         .as_str(),
                     )
-                    .set("transform", format!("translate(0, {})", 0 * 25)),
+                    .set("transform", format!("translate(0, {})", 0 * y_space)),
             )
             .add(
                 self.style
@@ -113,7 +114,7 @@ impl<'a, S: styles::Style + ?Sized> CardDrawer<'a, S> {
                         self.contributor.commit.addition,
                         "",
                     )
-                    .set("transform", format!("translate(0, {})", 25)),
+                    .set("transform", format!("translate(0, {})", y_space)),
             )
             .add(
                 self.style
@@ -123,7 +124,7 @@ impl<'a, S: styles::Style + ?Sized> CardDrawer<'a, S> {
                         self.contributor.commit.deletion,
                         "",
                     )
-                    .set("transform", format!("translate(0, {})", 2 * 25)),
+                    .set("transform", format!("translate(0, {})", 2 * y_space)),
             )
             .add(
                 self.style
@@ -137,7 +138,7 @@ impl<'a, S: styles::Style + ?Sized> CardDrawer<'a, S> {
                 )
                         .as_str(),
                     )
-                    .set("transform", format!("translate(0, {})", 3 * 25)),
+                    .set("transform", format!("translate(0, {})", 3 * y_space)),
             )
             .add(
                 self.style
@@ -151,7 +152,7 @@ impl<'a, S: styles::Style + ?Sized> CardDrawer<'a, S> {
                         )
                         .as_str(),
                     )
-                    .set("transform", format!("translate(0, {})", 4 * 25)),
+                    .set("transform", format!("translate(0, {})", 4 * y_space)),
             )
             .add(
                 self.style
@@ -161,7 +162,7 @@ impl<'a, S: styles::Style + ?Sized> CardDrawer<'a, S> {
                         self.contributor.issue.comment,
                         "",
                     )
-                    .set("transform", format!("translate(0, {})", 5 * 25)),
+                    .set("transform", format!("translate(0, {})", 5 * y_space)),
             );
         detail
     }
@@ -172,14 +173,7 @@ impl<'a, S: styles::Style + ?Sized> CardDrawer<'a, S> {
             &self.contributor.get_avatar_base64().await,
         );
         let detail = self.create_detail();
-        let span = Group::new().add(title).add(detail);
-        // println!("{}, {}", x_offset, y_offset);
-
-        Group::new().add(span)
-        // .set(
-        //     "transform",
-        //     format!("translate({}, {})", 300 * y_offset, 170 * x_offset),
-        // )
+        Group::new().add(title).add(detail)
     }
 }
 
@@ -201,12 +195,12 @@ pub async fn draw_period(
             repo,
             style,
         };
-        let x_offset = offset / style.user_per_row();
-        let y_offset = offset % style.user_per_row();
+        let x_offset = offset % style.user_per_row();
+        let y_offset = offset / style.user_per_row();
         doc = doc.add(drawer.contributor_info().await
         .set(
             "transform",
-            format!("translate({}, {})", style.card_width() * y_offset, 170 * x_offset),
+            format!("translate({}, {})", style.card_width() * x_offset, 170 * y_offset),
         ));
         offset += 1
     }
@@ -256,7 +250,7 @@ pub async fn draw_svg(data: &Vec<(Period, Vec<Contributor>)>, repo: &str, style:
     println!("{}", height);
 
     doc.set("height", height)
-        .set("width", style.card_width() * style.user_per_row())
+        .set("width", style.card_width() * style.user_per_row() + 20)
         .set("xmlns:xlink", "http://www.w3.org/1999/xlink")
         .add(Style::new(CSS))
 }

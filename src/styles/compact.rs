@@ -9,7 +9,7 @@ pub struct CompactStyle{}
 
 impl Style for CompactStyle {
     fn card_width(&self) -> u32 {
-        200
+        190
     }
 
     fn draw_contribution_item(
