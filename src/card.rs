@@ -242,7 +242,7 @@ pub async fn draw_svg(
         defs = defs.add(
             Image::new()
                 .set("id", author)
-                .set("xlink:href", avatar_base64_for_user(&author).await)
+                .set("xlink:href", avatar_base64_for_user(author).await)
                 .set("height", "100")
                 .set("width", "100"),
         )
