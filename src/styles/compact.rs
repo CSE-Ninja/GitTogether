@@ -1,6 +1,6 @@
 use svg::node::{
     self,
-    element::{self, Anchor, Group, Image, Use},
+    element::{self, Anchor, Group, Use},
 };
 
 use super::Style;
