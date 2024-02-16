@@ -1,4 +1,4 @@
-use std::{env};
+use std::env;
 
 use period::Period;
 use styles::get_style;

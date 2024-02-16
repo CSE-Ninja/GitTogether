@@ -5,7 +5,7 @@ and visualize it in your RAEDME file.
 
 # Contributors
 
-![](https://activity-action.vercel.app/api/handler?repo=aoli-al/activity-action)
+![](https://activity-action.vercel.app/api/handler?repo=aoli-al/activity-action&)
 
 
 # Instructions

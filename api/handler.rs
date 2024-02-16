@@ -24,7 +24,7 @@ pub async fn handler(req: Request) -> Result<Response<Body>, Error> {
             let period_str = params.get("period").unwrap();
             period::parse_from_input(period_str)
         } else {
-            period::get_recent10_days()
+            period::get_recent_one_month()
         };
 
         let style = if params.contains_key("style") {

@@ -1,4 +1,4 @@
-use activity_action::period::{get_recent10_days, parse_from_input};
+use activity_action::period::{get_recent_one_month, parse_from_input};
 use activity_action::process;
 
 use clap::Parser;
@@ -21,7 +21,7 @@ async fn main() {
     let periods = if let Some(period_str) = args.period {
         parse_from_input(&period_str)
     } else {
-        get_recent10_days()
+        get_recent_one_month()
     };
 
     let svg = process(&args.repo, periods, &args.style).await;

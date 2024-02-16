@@ -21,10 +21,10 @@ pub fn parse_from_input(input: &str) -> Vec<Period> {
 }
 
 
-pub fn get_recent10_days() -> Vec<Period> {
-    let name = "Recent 10 Days".to_string();
+pub fn get_recent_one_month() -> Vec<Period> {
+    let name = "Recent One Month".to_string();
     let now = Utc::now();
-    let start = (now - Duration::days(10)).to_rfc3339_opts(chrono::SecondsFormat::Secs, true);
+    let start = (now - Duration::days(30)).to_rfc3339_opts(chrono::SecondsFormat::Secs, true);
     let end = now.to_rfc3339_opts(chrono::SecondsFormat::Secs, true);
     vec![Period{name, start, end}]
 }
