@@ -6,18 +6,19 @@ edition = "2021"
 [dependencies]
 async-trait = "0.1.77"
 build_html = "2.4.0"
-octocrab = "0.33.1"
+octocrab = "0.34.1"
 serde = "1.0.195"
 serde_json = "1.0.111"
 tokio = { version = "1.35.1", features = ["full"] }
 chrono = "0.4.32"
 graphql_client = { version = "0.13.0", features = ["reqwest-blocking"]}
-svg = "0.14.0"
+svg = "0.15.1"
 reqwest = { version = "0.11.23", default-features=false, features=["rustls-tls"]}
-base64 = "0.13"
+base64 = "0.21.7"
 urlencoding = "2.1.3"
 vercel_runtime = { version = "1.1.0" }
 clap = { version = "4.4.18", features = ["derive"] }
+identicon-rs = "4.0.3"
 
 [[bin]]
 name = "handler"

@@ -34,6 +34,17 @@ query ContributorStatsQuery($owner: String!, $repo: String!, $start: GitTimestam
             __typename
             login
           }
+          reviews(first:100) {
+            edges {
+              node {
+                __typename
+                author {
+                __typename
+                  login
+                }
+              }
+            }
+          }
           comments(first: 100) {
             edges {
               node {
@@ -64,6 +75,9 @@ query ContributorStatsQuery($owner: String!, $repo: String!, $start: GitTimestam
                   user {
                     login
                   }
+                }
+                parents(first: 2) {
+                  totalCount
                 }
                 additions
                 deletions

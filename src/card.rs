@@ -10,9 +10,9 @@ use svg::{
 };
 
 use crate::{
-    api::{avatar_base64_for_user, Contributor},
+    api::{avatar_base64_for_user, AccountType, Contributor},
     period::Period,
-    styles::{self},
+    styles,
 };
 
 // (TODO) This should be optimized in the future.
@@ -231,18 +231,18 @@ pub async fn draw_svg(
             .set("stroke", "#003D00"),
     );
 
-    let authors: HashSet<&str> = data
+    let authors: HashSet<(&str, &AccountType)> = data
         .iter()
         .flat_map(|it| &it.1)
-        .map(|it| it.author.as_str())
+        .map(|it| (it.author.as_str(), &it.account_type))
         .collect();
 
     let mut defs = Definitions::new();
     for author in authors {
         defs = defs.add(
             Image::new()
-                .set("id", author)
-                .set("xlink:href", avatar_base64_for_user(author).await)
+                .set("id", author.0)
+                .set("xlink:href", avatar_base64_for_user(author.0, &author.1).await)
                 .set("height", "100")
                 .set("width", "100"),
         )

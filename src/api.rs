@@ -4,8 +4,10 @@ use crate::api::contributor_stats_query::Variables;
 use graphql_client::GraphQLQuery;
 use octocrab::{Octocrab, Result};
 use serde::{Deserialize, Serialize};
+use base64::{Engine as _, engine::{self, general_purpose}, alphabet};
+use identicon_rs::Identicon;
 
-use self::contributor_stats_query::ContributorStatsQueryRepositoryDefaultBranchRefTarget;
+use self::contributor_stats_query::{ContributorStatsQueryRepositoryDefaultBranchRefTarget,  ContributorStatsQueryRepositoryDefaultBranchRefTargetOnCommitHistoryEdgesNodeAuthor};
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -13,9 +15,10 @@ use self::contributor_stats_query::ContributorStatsQueryRepositoryDefaultBranchR
     query_path = "src/query.graphql",
     response_derives = "Debug"
 )]
-
 pub struct ContributorStatsQuery;
 type GitTimestamp = String;
+type CommitAuthor = ContributorStatsQueryRepositoryDefaultBranchRefTargetOnCommitHistoryEdgesNodeAuthor;
+
 
 #[allow(clippy::upper_case_acronyms)]
 type URI = String;
@@ -39,18 +42,30 @@ pub struct IssueContribution {
     pub comment: u32,
 }
 
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Hash)]
+pub enum AccountType {
+    Github,
+    Unkown
+}
+
+impl Default for AccountType {
+    fn default() -> Self { AccountType::Github }
+}
+
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Default)]
 #[non_exhaustive]
 pub struct Contributor {
     pub author: String,
     pub commit: CommitContribution,
     pub issue: IssueContribution,
+    pub account_type: AccountType
 }
 
 impl Contributor {
-    pub fn new(author: String) -> Self {
+    pub fn new(author: String, account_type: AccountType) -> Self {
         Self {
             author,
+            account_type,
             ..Default::default()
         }
     }
@@ -60,7 +75,7 @@ impl Contributor {
     }
 
     pub async fn get_avatar_base64(&self) -> String {
-        avatar_base64_for_user(&self.author).await
+        avatar_base64_for_user(&self.author, &self.account_type).await
     }
 }
 
@@ -68,11 +83,21 @@ pub fn avatar_for_user(user: &str) -> String {
     format!("https://github.com/{}.png", user)
 }
 
-pub async fn avatar_base64_for_user(user: &str) -> String {
-    let response = reqwest::get(avatar_for_user(user)).await.unwrap();
-    let bytes = response.bytes().await.unwrap();
-    let encoded = base64::encode(&bytes);
-    format!("data:image/png;base64,{}", encoded)
+pub async fn avatar_base64_for_user(user: &str, account_type: &AccountType) -> String {
+    match account_type {
+        AccountType::Github => {
+            let response = reqwest::get(avatar_for_user(user)).await.unwrap();
+            let bytes = response.bytes().await.unwrap();
+            let encoded = general_purpose::STANDARD.encode(&bytes);
+            format!("data:image/png;base64,{}", encoded)
+        }
+        _ => {
+            let icon = Identicon::new(user);
+            let bytes = icon.export_png_data().unwrap();
+            let encoded = general_purpose::STANDARD.encode(&bytes);
+            format!("data:image/png;base64,{}", encoded)
+        }
+    }
 }
 
 pub struct ContributorStats {
@@ -80,16 +105,16 @@ pub struct ContributorStats {
 }
 
 impl ContributorStats {
-    pub fn increase_addition(&mut self, user: &str, count: i64) {
-        self.get_or_create_mut(user).commit.addition += count as u32;
+    pub fn increase_addition(&mut self, user: &CommitAuthor, count: i64) {
+        self.get_or_create_from_user_mut(user).commit.addition += count as u32;
     }
 
-    pub fn increase_commit(&mut self, user: &str) {
-        self.get_or_create_mut(user).commit.commit += 1;
+    pub fn increase_commit(&mut self, user: &CommitAuthor) {
+        self.get_or_create_from_user_mut(user).commit.commit += 1;
     }
 
-    pub fn increase_deletion(&mut self, user: &str, count: i64) {
-        self.get_or_create_mut(user).commit.deletion += count as u32;
+    pub fn increase_deletion(&mut self, user: &CommitAuthor, count: i64) {
+        self.get_or_create_from_user_mut(user).commit.deletion += count as u32;
     }
 
     pub fn increase_issue(&mut self, user: &str) {
@@ -104,10 +129,23 @@ impl ContributorStats {
         self.get_or_create_mut(user).issue.comment += 1;
     }
 
+    pub fn get_or_create_from_user_mut(&mut self, user: &CommitAuthor) -> &mut Contributor {
+        if let Some(gh_user) = &user.user {
+            self.get_or_create_mut(&gh_user.login)
+        } else {
+            let username = user.name.as_deref().unwrap();
+            if !self.stats.contains_key(username) {
+                self.stats
+                    .insert(username.to_owned(), Contributor::new(username.to_string(), AccountType::Unkown));
+            }
+            self.stats.get_mut(username).unwrap()
+        }
+    }
+
     pub fn get_or_create_mut(&mut self, user: &str) -> &mut Contributor {
         if !self.stats.contains_key(user) {
             self.stats
-                .insert(user.to_owned(), Contributor::new(user.to_string()));
+                .insert(user.to_owned(), Contributor::new(user.to_string(), AccountType::Github));
         }
         self.stats.get_mut(user).unwrap()
     }
@@ -124,7 +162,7 @@ pub trait ContributorExt {
     ) -> Result<Vec<Contributor>>;
 }
 
-const IGNORED_ACCOUNTS: &[&str] = &["actions-user", "github-classroom[bot]"];
+const IGNORED_ACCOUNTS: &[&str] = &["actions-user", "github-classroom[bot]", "coveralls"];
 
 pub fn response_to_contributor_stat(response: ContributorStatsResponse) -> Vec<Contributor> {
     let mut result = ContributorStats {
@@ -158,6 +196,13 @@ pub fn response_to_contributor_stat(response: ContributorStatsResponse) -> Vec<C
                     result.increase_comment(&author.login)
                 }
             }
+            if let Some(review) = v.reviews {
+                for comment_opt in review.edges.unwrap() {
+                    if let Some(author) = comment_opt.unwrap().node.unwrap().author {
+                        result.increase_comment(&author.login)
+                    }
+                }
+            }
         }
     }
 
@@ -172,10 +217,14 @@ pub fn response_to_contributor_stat(response: ContributorStatsResponse) -> Vec<C
         let histories = c.history.edges.unwrap();
         for history in histories {
             if let Some(commit) = history.unwrap().node {
-                if let Some(author) = commit.author.unwrap().user {
-                    result.increase_addition(&author.login, commit.additions);
-                    result.increase_deletion(&author.login, commit.deletions);
-                    result.increase_commit(&author.login);
+                if commit.parents.total_count > 1 {
+                    // This is a merge commit, let's skip it.
+                    continue;
+                }
+                if let Some(author) = commit.author {
+                    result.increase_addition(&author, commit.additions);
+                    result.increase_deletion(&author, commit.deletions);
+                    result.increase_commit(&author);
                 }
             }
         }
