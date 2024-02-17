@@ -7,7 +7,7 @@ branding:
 inputs:
   timeframe:
     description: "Timeframe for each period in rfc3339 standard."
-    default: "Project 2/2024-01-20T00:00:00-05:00/2024-02-29T23:59:00-05:00"
+    default: "Project 2(S1)/2024-01-20T00:00:00-05:00/2024-02-13T23:59:00-05:00;Project 2(S2)/2024-02-14T00:00:00-05:00/2024-02-29T23:59:00-05:00"
   version:
     description: "Release version to use (default to latest)."
     default: ""
