@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use activity_action::period;
+use activity_action::period::{self, DEFAULT_PERIOD};
 use reqwest::Url;
 
 use vercel_runtime::{run, Body, Error, Request, Response, StatusCode};
@@ -24,7 +24,7 @@ pub async fn handler(req: Request) -> Result<Response<Body>, Error> {
             let period_str = params.get("period").unwrap();
             period::parse_from_input(period_str)
         } else {
-            period::parse_from_input("Project 2(S1)/2024-01-20T00:00:00-05:00/2024-02-13T23:59:00-05:00;Project 2(S2)/2024-02-14T00:00:00-05:00/2024-02-29T23:59:00-05:00;Project 3/2024-03-01T00:00:00-05:00/2024-03-21T23:59:00-05:00")
+            period::parse_from_input(DEFAULT_PERIOD)
             // period::get_recent_one_month()
         };
 
