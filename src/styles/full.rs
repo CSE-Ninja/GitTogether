@@ -23,8 +23,7 @@ impl Style for FullStyle {
         // .set("transform", format!("translate(0, {})", offset * 25));
         group = group.add(icon);
 
-        let text = element::Text::new()
-            .add(node::Text::new(format!("{}: {}", info, value)))
+        let text = element::Text::new(format!("{}: {}", info, value))
             .set("class", "stat")
             .set("x", 25)
             .set("y", 12.5);
@@ -39,8 +38,7 @@ impl Style for FullStyle {
         let title = Group::new().add(
             Anchor::new()
                 .add(
-                    element::Text::new()
-                        .add(node::Text::new(title))
+                    element::Text::new(title)
                         .set("class", "stat bold"),
                 )
                 .set(

@@ -263,8 +263,7 @@ pub async fn draw_svg(
             &ele.0.end[..10]
         );
         let title = Group::new().set("transform", "translate(25, 10)").add(
-            element::Text::new()
-                .add(node::Text::new(title))
+            element::Text::new(title)
                 .set("class", "header"),
         );
         let (mut card, offset) = draw_period(&ele.1, &ele.0.start, &ele.0.end, repo, style).await;
