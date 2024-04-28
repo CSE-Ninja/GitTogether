@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use activity_action::period::{self, DEFAULT_PERIOD};
+use gittogether::period::{self, DEFAULT_PERIOD};
 use reqwest::Url;
 
 use vercel_runtime::{run, Body, Error, Request, Response, StatusCode};
@@ -34,7 +34,7 @@ pub async fn handler(req: Request) -> Result<Response<Body>, Error> {
             "compact"
         };
 
-        let svg = activity_action::process(repo, periods, style).await;
+        let svg = gittogether::process(repo, periods, style).await;
 
         Ok(Response::builder()
             .status(StatusCode::OK)

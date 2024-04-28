@@ -1,5 +1,5 @@
-use activity_action::period::{get_recent_one_month, parse_from_input, DEFAULT_PERIOD};
-use activity_action::process;
+use gittogether::period::{get_recent_one_month, parse_from_input, DEFAULT_PERIOD};
+use gittogether::process;
 
 use clap::Parser;
 
