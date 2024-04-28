@@ -1,4 +1,4 @@
-use gittogether::period::{get_recent_one_month, parse_from_input, DEFAULT_PERIOD};
+use gittogether::period::{get_recent_one_month, parse_from_input};
 use gittogether::process;
 
 use clap::Parser;
@@ -21,7 +21,7 @@ async fn main() {
     let periods = if let Some(period_str) = args.period {
         parse_from_input(&period_str)
     } else {
-        parse_from_input(DEFAULT_PERIOD)
+        get_recent_one_month()
     };
 
     let svg = process(&args.repo, periods, &args.style).await;
