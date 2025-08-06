@@ -1,10 +1,7 @@
 use std::collections::{HashSet};
 
 use svg::{
-    node::{
-        self,
-        element::{self, Definitions, Group, Image, Path, Rectangle, Style, SVG},
-    },
+    node::element::{self, Definitions, Group, Image, Path, Rectangle, Style, SVG},
     parser::Event,
     Document,
 };
