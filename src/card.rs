@@ -7,8 +7,8 @@ use svg::{
 };
 
 use crate::{
+    activity::Activity,
     api::{avatar_base64_for_user, AccountType, Contributor},
-    period::Period,
     styles,
 };
 
@@ -213,7 +213,7 @@ pub async fn draw_period(
 }
 
 pub async fn draw_svg(
-    data: &Vec<(Period, Vec<Contributor>)>,
+    activities: &Vec<Activity>,
     repo: &str,
     style: &dyn styles::Style,
 ) -> Document {
@@ -228,9 +228,9 @@ pub async fn draw_svg(
             .set("stroke", "#003D00"),
     );
 
-    let authors: HashSet<(&str, &AccountType)> = data
+    let authors: HashSet<(&str, &AccountType)> = activities
         .iter()
-        .flat_map(|it| &it.1)
+        .flat_map(|it| &it.contributors)
         .map(|it| (it.author.as_str(), &it.account_type))
         .collect();
 
@@ -248,22 +248,26 @@ pub async fn draw_svg(
 
     let mut height = 30;
 
-    for ele in data {
-        if ele.1.is_empty() {
+    for period_activity in activities {
+        let period = &period_activity.period;
+        let contributors = &period_activity.contributors;
+
+        if contributors.is_empty() {
             continue;
         }
 
+        // TODO: add a to_s method to Period
         let title = format!(
             "{} ({}-{})\n",
-            ele.0.name,
-            &ele.0.start[..10],
-            &ele.0.end[..10]
+            period.name,
+            &period.start[..10],
+            &period.end[..10]
         );
         let title = Group::new().set("transform", "translate(25, 10)").add(
             element::Text::new(title)
                 .set("class", "header"),
         );
-        let (mut card, offset) = draw_period(&ele.1, &ele.0.start, &ele.0.end, repo, style).await;
+        let (mut card, offset) = draw_period(&contributors, &period.start, &period.end, repo, style).await;
         card = card.set("transform", "translate(0, 25)");
 
         doc = doc.add(

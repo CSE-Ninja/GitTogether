@@ -1,3 +1,7 @@
+use std::{path::PathBuf};
+
+use anyhow::{Context, Result};
+
 use gittogether::period::{get_recent_one_month, parse_from_input};
 use gittogether::process;
 
@@ -12,11 +16,14 @@ struct Args {
 
     #[arg(short, long, default_value = "compact")]
     style: String,
+
+    #[arg(short, long, default_value = "image.svg")]
+    output: PathBuf,
 }
 
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     let args = Args::parse();
     let periods = if let Some(period_str) = args.period {
         parse_from_input(&period_str)
@@ -25,5 +32,8 @@ async fn main() {
     };
 
     let svg = process(&args.repo, periods, &args.style).await;
-    svg::save("image.svg", &svg).unwrap();
+    svg::save(&args.output, &svg)
+        .with_context(|| format!("Failed writing output SVG to {}", args.output.display()))?;
+
+    Ok(())
 }
