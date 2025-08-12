@@ -1,13 +1,18 @@
 use std::collections::HashMap;
 
 use crate::api::contributor_stats_query::Variables;
+
+use chrono::{DateTime, Utc};
 use graphql_client::GraphQLQuery;
 use octocrab::{Octocrab, Result};
 use serde::{Deserialize, Serialize};
 use base64::{Engine as _, engine::general_purpose};
 use identicon_rs::Identicon;
 
-use self::contributor_stats_query::{ContributorStatsQueryRepositoryDefaultBranchRefTarget,  ContributorStatsQueryRepositoryDefaultBranchRefTargetOnCommitHistoryEdgesNodeAuthor};
+use self::contributor_stats_query::{
+    ContributorStatsQueryRepositoryDefaultBranchRefTarget,
+    ContributorStatsQueryRepositoryDefaultBranchRefTargetOnCommitHistoryEdgesNodeAuthor,
+};
 
 #[derive(GraphQLQuery)]
 #[graphql(
@@ -157,8 +162,8 @@ pub trait ContributorExt {
         &self,
         owner: &str,
         repo: &str,
-        start: &str,
-        end: &str,
+        start: &DateTime<Utc>,
+        end: &DateTime<Utc>,
     ) -> Result<Vec<Contributor>>;
 }
 
@@ -258,16 +263,19 @@ impl ContributorExt for Octocrab {
         &self,
         owner: &str,
         repo: &str,
-        start: &str,
-        end: &str,
+        start: &DateTime<Utc>,
+        end: &DateTime<Utc>,
     ) -> Result<Vec<Contributor>> {
-        let s1 = format!("repo:{owner}/{repo} type:issue created:{start}..{end}");
-        let s2 = format!("repo:{owner}/{repo} type:pr created:{start}..{end}");
+        let start_s = start.to_rfc3339();
+        let end_s = end.to_rfc3339();
+
+        let s1 = format!("repo:{owner}/{repo} type:issue created:{start_s}..{end_s}");
+        let s2 = format!("repo:{owner}/{repo} type:pr created:{start_s}..{end_s}");
         let variables = Variables {
             owner: owner.to_string(),
             repo: repo.to_string(),
-            start: start.to_string(),
-            end: end.to_string(),
+            start: start_s,
+            end: end_s,
             s1,
             s2,
         };
