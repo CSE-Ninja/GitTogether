@@ -256,13 +256,7 @@ pub async fn draw_svg(
             continue;
         }
 
-        // TODO: add a to_s method to Period
-        let title = format!(
-            "{} ({}-{})\n",
-            period.name,
-            &period.start[..10],
-            &period.end[..10]
-        );
+        let title = format!("{}\n", period.to_string());
         let title = Group::new().set("transform", "translate(25, 10)").add(
             element::Text::new(title)
                 .set("class", "header"),

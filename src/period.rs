@@ -7,6 +7,16 @@ pub struct Period {
 }
 
 impl Period {
+    // TODO implement fmt::Display for Period
+    pub fn to_string(&self) -> String {
+        format!(
+            "{} ({}–{})",
+            self.name,
+            self.start.get(0..10).unwrap(),
+            self.end.get(0..10).unwrap(),
+        )
+    }
+
     pub fn from_string(input: &str) -> Vec<Period> {
         input
             .split(';')
