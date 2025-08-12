@@ -2,7 +2,7 @@ use std::{path::PathBuf};
 
 use anyhow::{Context, Result};
 
-use gittogether::period::{get_recent_one_month, parse_from_input};
+use gittogether::period::{Period};
 use gittogether::process;
 
 use clap::Parser;
@@ -26,9 +26,9 @@ struct Args {
 async fn main() -> Result<()> {
     let args = Args::parse();
     let periods = if let Some(period_str) = args.period {
-        parse_from_input(&period_str)
+        Period::from_string(&period_str)
     } else {
-        get_recent_one_month()
+        Period::last_month()
     };
 
     let svg = process(&args.repo, periods, &args.style).await;
