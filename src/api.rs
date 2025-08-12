@@ -162,7 +162,14 @@ pub trait ContributorExt {
     ) -> Result<Vec<Contributor>>;
 }
 
-const IGNORED_ACCOUNTS: &[&str] = &["actions-user", "github-classroom[bot]", "coveralls"];
+const IGNORED_ACCOUNTS: &[&str] = &[
+    "actions-user",
+    "coveralls",
+    "dependabot",
+    "dependabot-preview[bot]",
+    "dependabot[bot]",
+    "github-classroom[bot]",
+];
 
 pub fn response_to_contributor_stat(response: ContributorStatsResponse) -> Vec<Contributor> {
     let mut result = ContributorStats {
