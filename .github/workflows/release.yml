@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  # on creation of a tag, or when manually triggered
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build release
+        run: cargo build --release
+
+      - name: Package artifact
+        run: |
+          mkdir -p dist
+          BIN="gittogether"
+          VERSION="${GITHUB_REF_NAME}"
+          cp target/release/$BIN dist/$BIN
+          strip dist/$BIN || true
+          tar -C dist -czf "gittogether-${VERSION}-linux-x86_64.tar.gz" $BIN
+          shasum -a 256 "gittogether-${VERSION}-linux-x86_64.tar.gz" > "gittogether-${VERSION}-linux-x86_64.tar.gz.sha256"
+
+      - name: Create/update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: false
+          prerelease: false
+          files: |
+            gittogether-*-linux-x86_64.tar.gz
+            gittogether-*-linux-x86_64.tar.gz.sha256
