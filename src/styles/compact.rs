@@ -1,7 +1,4 @@
-use svg::node::{
-    self,
-    element::{self, Anchor, Group, Use},
-};
+use svg::node::element::{self, Anchor, Group, Use};
 
 use super::Style;
 

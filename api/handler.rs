@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use gittogether::period::{self};
+use gittogether::period::Period;
 use reqwest::Url;
 
 use vercel_runtime::{run, Body, Error, Request, Response, StatusCode};
@@ -22,9 +22,9 @@ pub async fn handler(req: Request) -> Result<Response<Body>, Error> {
         let repo = params.get("repo").unwrap();
         let periods = if params.contains_key("period") {
             let period_str = params.get("period").unwrap();
-            period::parse_from_input(period_str)
+            Period::from_string(period_str)
         } else {
-            period::get_recent_one_month()
+            Period::last_month()
         };
 
         let style = if params.contains_key("style") {

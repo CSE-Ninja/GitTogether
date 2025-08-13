@@ -1,31 +1,48 @@
-use chrono::{Duration, Utc};
+use chrono::{DateTime, Duration, Utc};
 
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Period {
     pub name: String,
-    pub start: String,
-    pub end: String,
+    pub start: DateTime<Utc>,
+    pub end: DateTime<Utc>,
 }
 
+impl Period {
+    // TODO implement fmt::Display for Period
+    pub fn to_string(&self) -> String {
+        format!(
+            "{} ({}–{})",
+            self.name,
+            self.start.format("%Y-%m-%d"),
+            self.end.format("%Y-%m-%d"),
+        )
+    }
 
-pub fn parse_from_input(input: &str) -> Vec<Period> {
-    input
-        .split(';')
-        .map(|it| {
-            let v = it.split('/').take(3).collect::<Vec<&str>>();
-            println!("{}", it);
-            let name = v[0].to_string();
-            let start = v[1].to_string();
-            let end = v[2].to_string();
-            Period { name, start, end }
-        })
-        .collect()
-}
+    pub fn from_string(input: &str) -> Vec<Period> {
+        input
+            .split(';')
+            .filter_map(Self::parse_one)
+            .collect()
+    }
 
+    fn parse_one(spec: &str) -> Option<Period> {
+        let mut parts = spec.splitn(3, '/');
+        let name = parts.next()?.trim().to_owned();
+        let start_s = parts.next()?.trim();
+        let end_s = parts.next()?.trim();
 
-pub fn get_recent_one_month() -> Vec<Period> {
-    let name = "Recent One Month".to_string();
-    let now = Utc::now();
-    let start = (now - Duration::days(30)).to_rfc3339_opts(chrono::SecondsFormat::Secs, true);
-    let end = now.to_rfc3339_opts(chrono::SecondsFormat::Secs, true);
-    vec![Period{name, start, end}]
+        let start = DateTime::parse_from_rfc3339(start_s).ok()?.with_timezone(&Utc);
+        let end   = DateTime::parse_from_rfc3339(end_s).ok()?.with_timezone(&Utc);
+
+        Some(Period { name, start, end })
+    }
+
+    pub fn last_month() -> Vec<Period> {
+        let name = "Last Month".to_string();
+        let end = Utc::now();
+        let start = end - Duration::days(30);
+        vec![Period { name, start, end }]
+    }
 }

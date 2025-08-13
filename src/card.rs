@@ -1,15 +1,13 @@
 use std::collections::{HashSet};
 
 use svg::{
-    node::{
-        self,
-        element::{self, Definitions, Group, Image, Path, Rectangle, Style, SVG},
-    },
+    node::element::{self, Definitions, Group, Image, Path, Rectangle, Style, SVG},
     parser::Event,
     Document,
 };
 
 use crate::{
+    activity::Activity,
     api::{avatar_base64_for_user, AccountType, Contributor},
     period::Period,
     styles,
@@ -83,8 +81,7 @@ pub fn draw_discussion() -> SVG {
 
 pub struct CardDrawer<'a, S: styles::Style + ?Sized> {
     contributor: &'a Contributor,
-    start: &'a str,
-    end: &'a str,
+    period: &'a Period,
     repo: &'a str,
     style: &'a S,
 }
@@ -102,7 +99,10 @@ impl<'a, S: styles::Style + ?Sized> CardDrawer<'a, S> {
                         self.contributor.commit.commit,
                         format!(
                             "https://github.com/{}/commits?author={}&amp;since={}&amp;until={}",
-                            self.repo, self.contributor.author, self.start, self.end
+                            self.repo,
+                            self.contributor.author,
+                            self.period.start.to_rfc3339(),
+                            self.period.end.to_rfc3339(),
                         )
                         .as_str(),
                     )
@@ -135,9 +135,12 @@ impl<'a, S: styles::Style + ?Sized> CardDrawer<'a, S> {
                         "Issue",
                         self.contributor.issue.issue,
                         format!(
-                    "https://github.com/{}/issues?q=author%3A{}+type%3Aissue+created%3A{}..{}",
-                    self.repo, self.contributor.author, self.start, self.end
-                )
+                            "https://github.com/{}/issues?q=author%3A{}+type%3Aissue+created%3A{}..{}",
+                            self.repo,
+                            self.contributor.author,
+                            self.period.start.to_rfc3339(),
+                            self.period.end.to_rfc3339()
+                        )
                         .as_str(),
                     )
                     .set("transform", format!("translate(0, {})", 3 * y_space)),
@@ -150,7 +153,10 @@ impl<'a, S: styles::Style + ?Sized> CardDrawer<'a, S> {
                         self.contributor.issue.pr,
                         format!(
                             "https://github.com/{}/pulls?q=author%3A{}+type%3Apr+created%3A{}..{}",
-                            self.repo, self.contributor.author, self.start, self.end
+                            self.repo,
+                            self.contributor.author,
+                            self.period.start.to_rfc3339(),
+                            self.period.end.to_rfc3339(),
                         )
                         .as_str(),
                     )
@@ -181,8 +187,7 @@ impl<'a, S: styles::Style + ?Sized> CardDrawer<'a, S> {
 
 pub async fn draw_period(
     stat: &Vec<Contributor>,
-    start: &str,
-    end: &str,
+    period: &Period,
     repo: &str,
     style: &dyn styles::Style,
 ) -> (Group, u32) {
@@ -192,8 +197,7 @@ pub async fn draw_period(
     for contributor in stat {
         let drawer = CardDrawer {
             contributor,
-            start,
-            end,
+            period,
             repo,
             style,
         };
@@ -216,7 +220,7 @@ pub async fn draw_period(
 }
 
 pub async fn draw_svg(
-    data: &Vec<(Period, Vec<Contributor>)>,
+    activities: &Vec<Activity>,
     repo: &str,
     style: &dyn styles::Style,
 ) -> Document {
@@ -231,9 +235,9 @@ pub async fn draw_svg(
             .set("stroke", "#003D00"),
     );
 
-    let authors: HashSet<(&str, &AccountType)> = data
+    let authors: HashSet<(&str, &AccountType)> = activities
         .iter()
-        .flat_map(|it| &it.1)
+        .flat_map(|it| &it.contributors)
         .map(|it| (it.author.as_str(), &it.account_type))
         .collect();
 
@@ -251,22 +255,20 @@ pub async fn draw_svg(
 
     let mut height = 30;
 
-    for ele in data {
-        if ele.1.is_empty() {
+    for period_activity in activities {
+        let period = &period_activity.period;
+        let contributors = &period_activity.contributors;
+
+        if contributors.is_empty() {
             continue;
         }
 
-        let title = format!(
-            "{} ({}-{})\n",
-            ele.0.name,
-            &ele.0.start[..10],
-            &ele.0.end[..10]
-        );
+        let title = format!("{}\n", period.to_string());
         let title = Group::new().set("transform", "translate(25, 10)").add(
             element::Text::new(title)
                 .set("class", "header"),
         );
-        let (mut card, offset) = draw_period(&ele.1, &ele.0.start, &ele.0.end, repo, style).await;
+        let (mut card, offset) = draw_period(&contributors, &period, repo, style).await;
         card = card.set("transform", "translate(0, 25)");
 
         doc = doc.add(
