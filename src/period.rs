@@ -1,5 +1,8 @@
 use chrono::{DateTime, Duration, Utc};
 
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Period {
     pub name: String,
     pub start: DateTime<Utc>,
